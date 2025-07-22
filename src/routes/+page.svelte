@@ -49,7 +49,7 @@
         {/if}
     </div>
     <section style="max-width: 700px; margin: 3rem auto; padding: 0 1rem; font-family: sans-serif;">
-        <h1>How Countries Export Surveillance Technology</h1>
+
         <p>
             This visual map explores the global export of surveillance equipment. Scroll down to explore which countries are involved, who they’re exporting to, and which companies are behind the deals.
         </p>
