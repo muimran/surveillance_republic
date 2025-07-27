@@ -3,6 +3,8 @@
   import BarChart from '$lib/components/BarChart.svelte';
   import ExplainerScrolly from '$lib/components/ExplainerScrolly.svelte';
   import BdrMap from '$lib/components/bdrmap.svelte';
+  import AnimateLine from '$lib/components/AnimateLine.svelte';
+
 
   export let data;
 </script>
@@ -82,6 +84,8 @@
 
 <!-- Scrollytelling Component -->
 <BdrMap />
+
+<AnimateLine />
 
 <!-- Text below the scrolly -->
 <div class="nyt-text">
