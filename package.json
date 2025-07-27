@@ -27,8 +27,13 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
+		"d3": "^7.9.0",
+		"highcharts": "^12.3.0",
 		"leaflet": "^1.9.4",
+		"leaflet.markercluster": "^1.5.3",
+		"mapbox-gl": "^3.13.0",
 		"overlapping-marker-spiderfier-leaflet": "^0.2.7",
-		"papaparse": "^5.5.3"
+		"papaparse": "^5.5.3",
+		"scrollama": "^3.2.0"
 	}
 }

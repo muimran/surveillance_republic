@@ -1,205 +1,364 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
+  import { onMount } from 'svelte';
 
-	export let cityData;
+  export let points = [];
 
-	let mapContainer;
-	let map;
+  let mapDiv;
+  let map;
+  let markersLayer;
+  let isMapVisible = false;
 
-	onMount(async () => {
-		if (typeof window === 'undefined') return;
+  let activePoint = null; 
+  let tooltipPosition = 'top';
 
-		const L = (await import('leaflet')).default;
-		await import('overlapping-marker-spiderfier-leaflet');
-		const OverlappingMarkerSpiderfier = window.OverlappingMarkerSpiderfier;
+  let isMobile = false;
+  if (typeof window !== 'undefined') {
+    isMobile = window.innerWidth < 600;
+  }
 
-		map = L.map(mapContainer).setView([25, 0], 3);
+  let initialLat = isMobile ? 20 : 20;
+  let initialLng = isMobile ? 15 : 20;
+  let mapHeight = isMobile ? '400px' : '800px';
+  let initialZoom = isMobile ? 0.5 : 2.5;
+  let minZoom = isMobile ? 0.5 : 2.5;
 
-		L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
-			maxZoom: 19,
-			attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
-		}).addTo(map);
+  function valueToPixelSize(value) {
+    const baseSize = isMobile ? 10 : 20;
+    const scalingFactor = isMobile ? 1000 : 550;
+    return baseSize + Math.sqrt(value) / scalingFactor;
+  }
 
-		const oms = new OverlappingMarkerSpiderfier(map, {
-			keepSpiderfied: true,
-			spiderfyDistanceMultiplier: 4
-		});
+  function createCircleIcon(point, size, withAnimation = false) {
+    if (!window.L) return;
+    const markerColor = '#e63946';
+    const className = withAnimation ? 'fixed-marker with-animation leaflet-marker-icon' : 'fixed-marker leaflet-marker-icon';
+    return window.L.divIcon({
+      className: className,
+      html: `<div style="width: ${size}px; height: ${size}px; background-color: ${markerColor}; border-radius: 50%; opacity: 0.6;"></div>`,
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2]
+    });
+  }
 
-		function getAutoScaleFactor(data, desiredMaxRadius, baseRadius) {
-			const maxValue = Math.max(...data.map(d => d.value || 0));
-			const maxValueSqrt = Math.sqrt(maxValue);
-			if (maxValueSqrt === 0) return 0;
-			return (desiredMaxRadius - baseRadius) / maxValueSqrt;
-		}
+  let closeHandler;
 
-		function getCircleRadius(amount, scaleFactor, baseRadius) {
-			return baseRadius + (Math.sqrt(amount) * scaleFactor);
-		}
+  onMount(() => {
+    if (typeof window === 'undefined') return;
 
-		function getResponsiveMaxRadius() {
-			const width = window.innerWidth;
-			if (width > 1200) return 35;
-			if (width > 992) return 30;
-			if (width > 768) return 25;
-			if (width > 480) return 20;
-			return 15;
-		}
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { isMapVisible = entry.isIntersecting; });
+    }, { threshold: 0.1 });
 
-		function getMinWidth(width, minWidth = 8) {
-			return width > 0 && width < minWidth ? minWidth : width;
-		}
+    import('leaflet').then(L => {
+      window.L = L;
 
-		const baseRadius = 5;
-		const maxRadius = getResponsiveMaxRadius();
-		const scaleFactor = getAutoScaleFactor(cityData, maxRadius, baseRadius);
+      map = L.map(mapDiv, {
+        scrollWheelZoom: false,
+        touchZoom: isMobile,
+        doubleClickZoom: true,
+        zoomControl: true,
+        minZoom: minZoom,
+        maxBounds: [ [-70, -170], [80, 170] ],
+        maxBoundsViscosity: 1.0
+      }).setView([initialLat, initialLng], initialZoom);
 
-		cityData.forEach(countryData => {
-			if (countryData.lat && countryData.long && countryData.value) {
-				const latNum = countryData.lat;
-				const lonNum = countryData.long;
-				const valueNum = countryData.value;
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19,
+        minZoom: minZoom,
+        attribution: '© <a href="https://carto.com/attributions">CARTO</a>'
+      }).addTo(map);
 
-				if (typeof latNum === 'number' && typeof lonNum === 'number' && typeof valueNum === 'number') {
-					const circleRadius = getCircleRadius(valueNum, scaleFactor, baseRadius);
-					if (circleRadius > 0) {
-						const markerHtmlStyles = `
-							background-color: #1434A4; border: 1.5px solid #000000;
-							border-radius: 50%; opacity: 0.9;
-							width: ${circleRadius * 2}px; height: ${circleRadius * 2}px;
-							display: block;
-						`;
-						const customIcon = L.divIcon({
-							className: "animated-marker",
-							iconAnchor: [circleRadius, circleRadius],
-							popupAnchor: [0, -circleRadius],
-							html: `<span style="${markerHtmlStyles}"></span>`
-						});
+      // --- START: GeoJSON Highlighting Logic ---
+      
+      const countriesInData = new Set(points.map(p => p.country));
 
-						const marker = L.marker([latNum, lonNum], { icon: customIcon });
+      function getCountryStyle(feature) {
+        const countryNameFromGeoJSON = feature.properties.ADMIN;
+        
+        // --- CHANGED: Added a special condition for Cyprus ---
+        const isMatch = 
+          countriesInData.has(countryNameFromGeoJSON) ||
+          (countryNameFromGeoJSON === 'United States of America' && countriesInData.has('USA')) ||
+          (countryNameFromGeoJSON === 'United Kingdom' && countriesInData.has('UK')) ||
+          (countryNameFromGeoJSON === 'N. Cyprus' && countriesInData.has('Cyprus')); // <-- This is the fix
 
-						const maxExportValue = countryData.exporter_companies && countryData.exporter_companies.length > 0
-							? Math.max(...countryData.exporter_companies.map(e => e.export_value || 0))
-							: 0;
+        if (isMatch) {
+          return {
+            fillColor: '#FEEFB3',
+            fillOpacity: 0.7,
+            color: '#E6A23C',
+            weight: 1
+          };
+        } else {
+          return {
+            fillOpacity: 0,
+            stroke: false
+          };
+        }
+      }
 
-                            const exportersHTML = (countryData.exporter_companies && countryData.exporter_companies.length > 0)
-  ? `<div class="exporters-section">
-       <strong class="exporters-heading">Exporting Companies</strong>
-       <div class="exporter-list">` +
-      countryData.exporter_companies
-        .slice()
-        .sort((a, b) => (b.export_value || 0) - (a.export_value || 0))
-        .map(exp => {
-          const exportValue = exp.export_value || 0;
-          const barWidthRaw = maxExportValue > 0 ? (exportValue / maxExportValue) * 100 : 0;
-          const barWidth = getMinWidth(barWidthRaw);
-          return `
-            <div class="exporter-item">
-              <span class="company-name">${exp.exporter_company || 'Unknown'}</span>
-              <div class="company-bar" style="width: ${barWidth}px;"></div>
-            </div>`;
-        }).join('') +
-      `</div>
-     </div>`
-  : `<div class="no-exporters">No exporters data</div>`;
-
-
-
-  const importersHTML = (countryData.importers && countryData.importers.length > 0)
-  ? `<div class="importers-section">
-       <strong class="importers-heading">Importing Agencies</strong>
-       <div class="exporter-list">` +
-      countryData.importers
-        .slice()
-        .sort((a, b) => (b.import_value || 0) - (a.import_value || 0))
-        .map(imp => {
-          const importValue = imp.import_value || 0;
-          const maxImportValue = Math.max(...countryData.importers.map(e => e.import_value || 0));
-          const barWidthRaw = maxImportValue > 0 ? (importValue / maxImportValue) * 100 : 0;
-          const barWidth = getMinWidth(barWidthRaw);
-          return `
-            <div class="exporter-item">
-              <span class="company-name">${imp.importer_agency || 'Unknown'}</span>
-              <div class="company-bar" style="width: ${barWidth}px;"></div>
-            </div>`;
-        }).join('') +
-      `</div>
-     </div>`
-  : '';
+      fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson')
+        .then(response => response.json())
+        .then(data => {
+          L.geoJSON(data, {
+            style: getCountryStyle
+          }).addTo(map);
+        });
+      // --- END: GeoJSON Highlighting Logic ---
 
 
+      markersLayer = L.layerGroup().addTo(map);
 
-						const popupContent = `
-							<div class="custom-popup">
-								<strong class="popup-title">${countryData.country}</strong><br>
-                                <span>${valueNum.toLocaleString()}</span>
-								<div class="fixed-bar"></div>
-								${exportersHTML}
-                                ${importersHTML}
-							</div>
-						`;
+      closeHandler = (event) => {
+        const onMarker = event.target.closest('.leaflet-marker-icon');
+        const onPopup = event.target.closest('.leaflet-popup');
+        const onMobileTooltip = event.target.closest('.mobile-tooltip');
+        if (!onMarker && !onPopup && !onMobileTooltip) {
+          if (map) map.closePopup();
+          activePoint = null;
+        }
+      };
+      
+      document.addEventListener('click', closeHandler, true);
+      document.addEventListener('touchstart', closeHandler, true);
 
-						marker.bindPopup(popupContent, { className: 'data-story-popup' });
-						marker.addTo(map);
+      const createMarker = (point) => {
+        const size = valueToPixelSize(point.value);
+        const divIcon = createCircleIcon(point, size, true);
+        const marker = L.marker([point.lat, point.long], { icon: divIcon });
 
-                        if (countryData.label_text) {
-  const labelIcon = L.divIcon({
-    className: 'label-icon',
-    html: `<div class="circle-label">${countryData.label_text}</div>`,
-    iconSize: null, // Let CSS handle size
+        if (isMobile) {
+          marker.on('click', (e) => {
+            const clickY = e.containerPoint.y;
+            const mapContainerHeight = map.getSize().y;
+            tooltipPosition = (clickY > mapContainerHeight / 2) ? 'top' : 'bottom';
+            activePoint = point;
+          });
+        } else {
+          let exporterHtml = '';
+          if (point.exporter_companies && point.exporter_companies.length > 0) {
+            const exporterListItems = point.exporter_companies.map(exp => `<li>${exp.exporter_company}</li>`).join('');
+            exporterHtml = `<div class="tooltip-exporters"><strong>Exporter Companies:</strong><ul>${exporterListItems}</ul></div>`;
+          }
+          const importerLabel = point.importers.length > 1 ? 'Importer Agencies' : 'Importer Agency';
+          const importerListItems = point.importers.map(imp => `<li>${imp.importer_agency}</li>`).join('');
+          const importerHtml = `<div class="tooltip-importers"><strong>${importerLabel}:</strong><ul>${importerListItems}</ul></div>`;
+          marker.bindPopup(`<div class="tooltip-content"><strong>${point.country}</strong><div class="tooltip-amount">Amount: ${point.label_text}</div>${exporterHtml}${importerHtml}</div>`, {
+            className: 'custom-tooltip', maxWidth: 300
+          });
+        }
+
+        setTimeout(() => {
+          const finalIcon = createCircleIcon(point, size, false);
+          marker.setIcon(finalIcon);
+        }, 1500);
+
+        return marker;
+      };
+
+      const updateCircleMarkers = () => {
+        markersLayer.eachLayer(layer => {
+          if (layer instanceof L.Marker) {
+            const point = points.find(p => p.lat === layer.getLatLng().lat && p.long === layer.getLatLng().lng);
+            if (point) {
+              const size = valueToPixelSize(point.value);
+              const newIcon = createCircleIcon(point, size, false);
+              layer.setIcon(newIcon);
+            }
+          }
+        });
+      };
+
+      if (points && points.length > 0) {
+        points.forEach(point => {
+          const marker = createMarker(point);
+          markersLayer.addLayer(marker);
+        });
+      }
+
+      map.on('zoomend', updateCircleMarkers);
+      observer.observe(mapDiv);
+    });
+
+    return () => {
+      if (observer) observer.disconnect();
+      if (closeHandler) {
+        document.removeEventListener('click', closeHandler, true);
+        document.removeEventListener('touchstart', closeHandler, true);
+      }
+    };
   });
-
-  const labelMarker = L.marker([latNum, lonNum], {
-    icon: labelIcon,
-    interactive: false // Prevent hover/click
-  }).addTo(map);
-}
-
-						oms.addMarker(marker);
-					}
-				}
-			}
-		});
-	});
-
-	onDestroy(() => {
-		if (map) {
-			map.remove();
-		}
-	});
 </script>
 
+<!-- The HTML and Style sections are unchanged -->
+<div class="map-wrapper" style="height: {mapHeight};">
+  <div bind:this={mapDiv} id="map" style="height: 100%; width: 100%;"></div>
+
+  {#if activePoint && isMobile}
+    <div 
+      class="mobile-tooltip"
+      class:position-top={tooltipPosition === 'top'}
+      class:position-bottom={tooltipPosition === 'bottom'}
+    >
+      <div class="tooltip-content">
+        <strong>{activePoint.country}</strong>
+        <div class="tooltip-amount">Amount: {activePoint.label_text}</div>
+        
+        {#if activePoint.exporter_companies && activePoint.exporter_companies.length > 0}
+          <div class="tooltip-exporters">
+            <strong>Exporter Companies:</strong>
+            <ul>
+              {#each activePoint.exporter_companies as exporter}
+                <li>{exporter.exporter_company}</li>
+              {/each}
+            </ul>
+          </div>
+        {/if}
+
+        <div class="tooltip-importers">
+          <strong>{activePoint.importers.length > 1 ? 'Importer Agencies' : 'Importer Agency'}:</strong>
+          <ul>
+            {#each activePoint.importers as importer}
+              <li>{importer.importer_agency}</li>
+            {/each}
+          </ul>
+        </div>
+      </div>
+    </div>
+  {/if}
+</div>
+
 <style>
-:global(.data-story-popup .leaflet-popup-content-wrapper) {
-    background-color: rgba(43, 72, 95, 0.95) !important;
-    color: #333 !important;
-  border-radius: 10px !important;
-  padding: 12px !important;
-}
+  .map-wrapper {
+    position: relative;
+    width: 100vw;
+  }
 
-:global(.data-story-popup .leaflet-popup-tip) {
-  background-color: #f0f0ff !important;
-}
+  .mobile-tooltip {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 300px;
+    z-index: 1001;
+    background-color: #ffffff;
+    color: black;
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-size: 14px;
+    line-height: 1.5;
+    pointer-events: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    transition: top 0.2s ease-out, bottom 0.2s ease-out;
+  }
 
-:global(.data-story-popup .popup-title) {
-  font-family: 'Arial Black', Arial, sans-serif;
-  font-size: 14px;  /* fix typo here */
-  font-weight: bold;
-  color: #dedfef;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-  display: block;
-  margin-bottom: 0px;  /* reduce space below */
-}
-
-:global(.data-story-popup .custom-popup > span) {
-  font-size: 14px !important;  /* change 14px to whatever size you want */ /* change 14px to whatever size you want */
-  line-height: 1.2;
-  color: #dedfef;
-  margin-top: -2;
-}
-
-  </style>
+  .mobile-tooltip.position-top {
+    top: 15px;
+    bottom: auto;
+  }
   
+  .mobile-tooltip.position-bottom {
+    bottom: 15px;
+    top: auto;
+  }
+  
+  #map {
+    touch-action: pan-x pan-y;
+  }
 
-<div bind:this={mapContainer} style="height: 100%; width: 100%;"></div>
+  :global(.leaflet-marker-icon.fixed-marker) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-<slot />
+  :global(.fixed-marker.with-animation > div) {
+    animation: grow-shrink 1.5s ease forwards;
+  }
+
+  @keyframes grow-shrink {
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.2);
+      opacity: 0.6;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0.6;
+    }
+  }
+
+  :global(.custom-tooltip .leaflet-popup-content-wrapper) {
+    background-color: #ffffff !important;
+    color: black !important;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+    width: auto;
+  }
+
+  :global(.custom-tooltip .leaflet-popup-content) {
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  :global(.custom-tooltip .leaflet-popup-tip) {
+    background-color: #ffffff !important;
+  }
+
+  .tooltip-content {
+    width: 100%;
+  }
+
+  :global(.tooltip-content > strong:first-child) {
+    font-size: 18px;
+  }
+  
+  :global(.tooltip-amount) {
+    padding-top: 5px;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    border-bottom: 1.5px solid rgb(0, 0, 0);
+  }
+
+  :global(.tooltip-importers),
+  :global(.tooltip-exporters) {
+    word-wrap: break-word;
+  }
+
+  :global(.tooltip-importers) {
+    margin-top: 8px;
+  }
+
+  :global(.tooltip-importers strong),
+  :global(.tooltip-exporters strong) {
+    font-size: 14px;
+    font-weight: bold;
+    color: black;
+  }
+
+  :global(.tooltip-importers ul),
+  :global(.tooltip-exporters ul) {
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 4px;
+    margin-bottom: 0;
+  }
+
+  :global(.tooltip-importers li),
+  :global(.tooltip-exporters li) {
+    line-height: 1.3;
+    padding-bottom: 2px;
+  }
+
+  @media (max-width: 600px) {
+    .mobile-tooltip .tooltip-content,
+    :global(.custom-tooltip .leaflet-popup-content) {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+  }
+</style>

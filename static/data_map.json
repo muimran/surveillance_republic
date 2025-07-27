@@ -58,7 +58,7 @@
       ],
       "importers": [
         {
-          "importer_agency": "The National Telecommunication Monitoring Centre",
+          "importer_agency": "The NTMC",
           "import_value": 35983784
         }
       ]
@@ -90,7 +90,7 @@
       ],
       "importers": [
         {
-          "importer_agency": "The National Telecommunication Monitoring Centre",
+          "importer_agency": "The NTMC",
           "import_value": 12580302
         }
       ]
@@ -190,7 +190,7 @@
       ],
       "importers": [
         {
-          "importer_agency": "The National Telecommunication Monitoring Centre",
+          "importer_agency": "The NTMC",
           "import_value": 28839199
         }
       ]
@@ -210,7 +210,7 @@
       ],
       "importers": [
         {
-          "importer_agency": "The National Telecommunication Monitoring Centre",
+          "importer_agency": "The NTMC",
           "import_value": 969196
         }
       ]
@@ -242,7 +242,7 @@
           "import_value": 2718391019
         },
         {
-          "importer_agency": "The National Telecommunication Monitoring Centre",
+          "importer_agency": "The NTMC",
           "import_value": 451136037
         },
         {
@@ -274,7 +274,7 @@
           "import_value": 430652939
         },
         {
-          "importer_agency": "The National Telecommunication Monitoring Centre",
+          "importer_agency": "The NTMC",
           "import_value": 12580302
         }
       ]
@@ -294,7 +294,7 @@
       ],
       "importers": [
         {
-          "importer_agency": "The National Telecommunication Monitoring Centre",
+          "importer_agency": "The NTMC",
           "import_value": 4575516
         }
       ]
@@ -338,11 +338,11 @@
       ],
       "importers": [
         {
-          "importer_agency": "The National Telecommunication Monitoring Centre",
+          "importer_agency": "The NTMC",
           "import_value": 92872674
         },
         {
-          "importer_agency": "National Telecommunication Monitoring Centre",
+          "importer_agency": "The NTMC",
           "import_value": 597625154
         }
       ]
@@ -394,7 +394,7 @@
           "import_value": 116479501
         },
         {
-          "importer_agency": "National Telecommunication Monitoring Centre",
+          "importer_agency": "The NTMC",
           "import_value": 597625154
         }
       ]

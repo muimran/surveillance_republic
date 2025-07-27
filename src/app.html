@@ -1,12 +1,60 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		%sveltekit.head%
-	</head>
-	<body data-sveltekit-preload-data="hover">
-		<div style="display: contents">%sveltekit.body%</div>
-	</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Leaflet Mobile Map Example</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+      body {
+        padding: 0;
+        margin: 0;
+      }
+      #map {
+        width: 100vw;
+        /* height is set inline in Map.svelte */
+      }
+    </style>
+
+    <!-- Your author and SEO metadata -->
+    <meta name="author" content="Muhammad Imran" />
+    <meta name="description" content="Data journalism and visualisation project by Muhammad Imran, reporting by Yma Islam." />
+
+    <!-- JSON-LD structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "CreativeWork",
+        "name": "Surveilance in Bangladesh",
+        "description": "An interactive visualisation built using SvelteKit. Web development and visualisation by Muhammad Imran. Reporting by Zyma Islam.",
+        "datePublished": "2025-08-02",
+        "author": [
+          {
+            "@type": "Person",
+            "name": "Muhammad Imran",
+            "jobTitle": "Data Journalist and Visualisation Specialist",
+            "url": "https://muhammadimran.com"
+          },
+          {
+            "@type": "Person",
+            "name": "Zyma Islam",
+            "jobTitle": "Investigative Journalist"
+          }
+        ],
+        "keywords": [
+          "Bangladesh",
+          "data journalism",
+          "visual storytelling",
+          "Muhammad Imran"
+        ]
+      }
+    </script>
+
+    %sveltekit.head%
+  </head>
+  <body>
+    <div id="svelte">%sveltekit.body%</div>
+  </body>
 </html>
