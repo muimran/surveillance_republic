@@ -7,11 +7,10 @@
   let mapContainer;
   let markers = [];
 
-  // Your Mapbox access token
   mapboxgl.accessToken = 'pk.eyJ1IjoiaW1yYW5kYXRhIiwiYSI6ImNtMDRlaHh1YTA1aDEybHI1ZW12OGh4cDcifQ.fHLLFYQx7JKPUp2Sl1jtYg';
 
   onMount(async () => {
-    // Load CSV and parse markers from your public folder
+    // Load CSV and parse markers
     const response = await fetch('/bgb.csv');
     const csvText = await response.text();
 
@@ -28,7 +27,6 @@
           })
           .filter(({ lat, lon }) => !isNaN(lat) && !isNaN(lon));
 
-        // Initialize the map only after the data is parsed
         initMap();
       }
     });
@@ -42,7 +40,7 @@
       zoom: 14
     });
 
-    // Add markers to the map
+    // Add markers
     markers.forEach(({ lat, lon, title }) => {
       new mapboxgl.Marker({ color: 'red' })
         .setLngLat([lon, lat])
@@ -50,28 +48,40 @@
         .addTo(map);
     });
 
-    // Wait for the map to fully load its style before adding layers
+    // Wait for map to load before adding polygon and line layers
     map.on('load', async () => {
-      
       // --- POLYGON LAYER ---
-      // This section was working correctly and remains unchanged.
+
       const polyResponse = await fetch('/poly.geojson');
       const polyData = await polyResponse.json();
 
-      map.addSource('polygon', { type: 'geojson', data: polyData });
+      // Add polygon source and layers
+      map.addSource('polygon', {
+        type: 'geojson',
+        data: polyData
+      });
+
       map.addLayer({
         id: 'polygon-fill',
         type: 'fill',
         source: 'polygon',
-        paint: { 'fill-color': '#0033aa', 'fill-opacity': 0.0 }
+        paint: {
+          'fill-color': '#0033aa',
+          'fill-opacity': 0.0 // start transparent for animation
+        }
       });
+
       map.addLayer({
         id: 'polygon-outline',
         type: 'line',
         source: 'polygon',
-        paint: { 'line-color': '#0033aa', 'line-width': 2 }
+        paint: {
+          'line-color': '#0033aa',
+          'line-width': 2
+        }
       });
 
+      // Animate polygon fill opacity from 0 to 0.8
       let opacity = 0;
       function animatePolygon() {
         if (opacity < 0.8) {
@@ -82,31 +92,26 @@
       }
       animatePolygon();
 
-      
-      // --- LINE LAYER (CORRECTED IMPLEMENTATION) ---
-      
+      // --- LINE LAYER ---
+
       const lineResponse = await fetch('/line.geojson');
       const lineData = await lineResponse.json();
-      
-      // The full path of the line from your GeoJSON file
-      const allCoords = lineData.features[0].geometry.coordinates;
 
-      // An empty feature collection that we will fill dynamically
-      const animatedLineFeature = {
+      // Prepare empty line source for animation
+      const lineFeature = {
         type: 'FeatureCollection',
         features: [{
           type: 'Feature',
           geometry: {
             type: 'LineString',
-            coordinates: [] // Start with an empty line
+            coordinates: []
           }
         }]
       };
 
-      // Add the source and layer for the animated line
       map.addSource('animated-line', {
         type: 'geojson',
-        data: animatedLineFeature
+        data: lineFeature
       });
 
       map.addLayer({
@@ -114,59 +119,31 @@
         type: 'line',
         source: 'animated-line',
         paint: {
-          'line-color': '#ff0000', // Red line
+          'line-color': '#ff0000',
           'line-width': 3
         }
       });
 
-      // --- EFFICIENT ANIMATION LOGIC ---
-      const totalDuration = 2000; // 2 seconds for the animation
-      let startTime;
-      let currentIndex = 0; // Tracks the last point we added to the map
+      // Animate line coordinates progressively
+const coords = lineData.features[0].geometry.coordinates;
+let idx = 0;
+const totalDuration = 5000; // total animation duration in ms (2 seconds)
+const delayPerPoint = totalDuration / coords.length; // delay between each point
 
-      function animateLine(timestamp) {
-        if (startTime === undefined) {
-          startTime = timestamp;
-        }
-
-        const elapsed = timestamp - startTime;
-        const progress = Math.min(elapsed / totalDuration, 1);
-
-        // Calculate the target index of the coordinate that should be visible by now
-        const targetIndex = Math.floor(allCoords.length * progress);
-
-        // This is the key optimization:
-        // Only update the map data if we have new points to add.
-        // This avoids calling the expensive setData() on every single frame.
-        if (targetIndex > currentIndex) {
-          // Get the portion of the line to display
-          const coordsToShow = allCoords.slice(0, targetIndex + 1);
-          
-          animatedLineFeature.features[0].geometry.coordinates = coordsToShow;
-          map.getSource('animated-line').setData(animatedLineFeature);
-          
-          // Update our record of which point was last added
-          currentIndex = targetIndex;
-        }
-
-        // Continue the animation as long as we are not finished
-        if (progress < 1) {
-          requestAnimationFrame(animateLine);
-        } else {
-          // Animation is finished. Do one final update to ensure the full line is drawn.
-          animatedLineFeature.features[0].geometry.coordinates = allCoords;
-          map.getSource('animated-line').setData(animatedLineFeature);
-        }
-      }
-
-      // Start the animation loop
-      requestAnimationFrame(animateLine);
+function animateLine() {
+  if (idx < coords.length) {
+    lineFeature.features[0].geometry.coordinates.push(coords[idx]);
+    map.getSource('animated-line').setData(lineFeature);
+    idx++;
+    setTimeout(animateLine, delayPerPoint); // dynamically adjusted speed
+  }
+}
+animateLine();
     });
   }
 </script>
 
 <style>
-  /* Import the Mapbox GL CSS */
   @import 'mapbox-gl/dist/mapbox-gl.css';
 
   #map {
@@ -175,5 +152,4 @@
   }
 </style>
 
-<!-- The map container div -->
 <div bind:this={mapContainer} id="map"></div>
