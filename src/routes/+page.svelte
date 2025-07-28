@@ -2,9 +2,7 @@
   import Map from '$lib/components/Map.svelte';
   import BarChart from '$lib/components/BarChart.svelte';
   import ExplainerScrolly from '$lib/components/ExplainerScrolly.svelte';
-  import BdrMap from '$lib/components/bdrmap.svelte';
-  import AnimateLine from '$lib/components/AnimateLine.svelte';
-  import LineExperiment from '$lib/components/LineExperiment.svelte';
+
 
 
   export let data;
@@ -79,12 +77,11 @@
 </div>
 
 <!-- This is the final paragraph before <ExplainerScrolly /> -->
-<div class="nyt-text scrolly-step">
+ <!-- <div class="nyt-text scrolly-step"> /> -->
+<div class="nyt-text">
   <p>The second step is the decryption of the encrypted traffic. For this, they purchased an SSL (secure sockets layer) decryption platform. SSL is a way to keep data safe when it travels between a browser and a website by locking it with encryption. This device intercepts SSL connections between devices and positions itself in the middle of the connection. When a sender sends traffic to a receiver, it intercepts the incoming traffic halfway, decrypts it, inspects it, reencrypts it, and passes it along to the unsuspecting receiver.</p>
 </div>
 
-<!-- Scrollytelling Component -->
-<BdrMap />
 
 <div class="nyt-text">
   <p>The Daily Star shared the list of components purchased by the NTMC between 2018 and 2022 with its in-house network specialists and using information about the components, they reconstructed the ILIS network.</p>

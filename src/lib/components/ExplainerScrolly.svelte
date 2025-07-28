@@ -13,7 +13,7 @@
         id: 1,
         image: '/images/step1.png',
         title: "1. Traffic Interception",
-        text: "Copper Tap Modules clone unencrypted ethernet traffic from network links, providing a complete and passive copy of all data for analysis without impacting network performance."
+        text: "Copper Tap M odules clone unencrypted ethernet traffic from network links, providing a complete and passive copy of all data for analysis without impacting network performance."
       },
       {
         id: 2,

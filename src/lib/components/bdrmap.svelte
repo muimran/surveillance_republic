@@ -1,15 +1,32 @@
+<script context="module">
+  export const ssr = false;
+</script>
+
 <script>
-  import { onMount } from 'svelte';
-  import Papa from 'papaparse';
+  import { onMount, onDestroy } from 'svelte';
   import mapboxgl from 'mapbox-gl';
+  import Papa from 'papaparse';
+  import scrollama from 'scrollama';
 
   let map;
   let mapContainer;
   let markers = [];
+  let mapMarkers = [];
+  let activeIndex = 0;
+  let scroller;
+  let markersLoaded = false; // Flag to track if markers have been loaded
 
   mapboxgl.accessToken = 'pk.eyJ1IjoiaW1yYW5kYXRhIiwiYSI6ImNtMDRlaHh1YTA1aDEybHI1ZW12OGh4cDcifQ.fHLLFYQx7JKPUp2Sl1jtYg';
 
-  // Hardcoded line coordinates
+  const steps = [
+    {
+      id: 1,
+      title: "Border Incidents",
+      text: "These are the reported incidents on the border. Scroll down to reveal."
+    }
+    // Add more steps here if needed
+  ];
+
   const allCoordinates = [
     [90.44275857913989, 23.762151498627887],
     [90.44246782926804, 23.76217069572667],
@@ -41,7 +58,6 @@
         clearInterval(interval);
         return;
       }
-
       const coords = allCoordinates.slice(0, index);
       map.getSource('route').setData({
         type: 'Feature',
@@ -50,33 +66,60 @@
           coordinates: coords
         }
       });
-
       index++;
-    }, 70); // Adjust speed here
+    }, 70);
   }
 
-  onMount(async () => {
-    // Load CSV and parse markers
-    const response = await fetch('/bgb.csv');
-    const csvText = await response.text();
+  function renderMarkers() {
+    if (markersLoaded) return; // Only render markers once
 
-    Papa.parse(csvText, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (result) => {
-        markers = result.data
-          .map(row => {
-            const lat = parseFloat(row['Latitude']);
-            const lon = parseFloat(row['Longitude']);
-            const title = row['Identifier'] || 'Untitled';
-            return { lat, lon, title };
-          })
-          .filter(({ lat, lon }) => !isNaN(lat) && !isNaN(lon));
-
-        initMap();
-      }
+    markers.forEach(({ lat, lon, title }) => {
+      const marker = new mapboxgl.Marker({ color: 'red' })
+        .setLngLat([lon, lat])
+        .setPopup(new mapboxgl.Popup().setText(title))
+        .addTo(map);
+      mapMarkers.push(marker);
     });
-  });
+
+    markersLoaded = true;
+  }
+
+  function handleStepEnter(response) {
+    const i = response.index;
+    activeIndex = i;
+
+    if (steps[i]?.id === 1) {
+      renderMarkers();
+    }
+  }
+
+  function handleStepExit(response) {
+    // Optional: add logic on step exit if needed
+  }
+
+  function setupScrollama() {
+    // Add slight delay to ensure proper initialization
+    setTimeout(() => {
+      scroller = scrollama();
+
+      scroller
+        .setup({
+          step: '.scrolly-step',
+          offset: 0.6,
+          debug: false
+        })
+        .onStepEnter(handleStepEnter)
+        .onStepExit(handleStepExit);
+
+      const resize = () => scroller.resize();
+      window.addEventListener('resize', resize);
+
+      onDestroy(() => {
+        window.removeEventListener('resize', resize);
+        scroller.destroy();
+      });
+    }, 100);
+  }
 
   async function initMap() {
     map = new mapboxgl.Map({
@@ -86,24 +129,10 @@
       zoom: 14
     });
 
-    // Add markers
-    markers.forEach(({ lat, lon, title }) => {
-      new mapboxgl.Marker({ color: 'red' })
-        .setLngLat([lon, lat])
-        .setPopup(new mapboxgl.Popup().setText(title))
-        .addTo(map);
-    });
-
-    // Wait for map to load before adding layers
     map.on('load', async () => {
-      // --- POLYGON LAYER ---
-      const polyResponse = await fetch('/poly.geojson');
-      const polyData = await polyResponse.json();
+      const polyData = await fetch('/poly.geojson').then(r => r.json());
 
-      map.addSource('polygon', {
-        type: 'geojson',
-        data: polyData
-      });
+      map.addSource('polygon', { type: 'geojson', data: polyData });
 
       map.addLayer({
         id: 'polygon-fill',
@@ -135,7 +164,6 @@
       }
       animatePolygon();
 
-      // --- NEW LINE LAYER (REPLACING OLD GEOJSON LINE) ---
       map.addSource('route', {
         type: 'geojson',
         data: {
@@ -164,15 +192,100 @@
       animateLine();
     });
   }
+
+  onMount(async () => {
+    const response = await fetch('/bgb.csv');
+    const csvText = await response.text();
+
+    Papa.parse(csvText, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (result) => {
+        markers = result.data
+          .map(row => {
+            const lat = parseFloat(row['Latitude']);
+            const lon = parseFloat(row['Longitude']);
+            const title = row['Identifier'] || 'Untitled';
+            return { lat, lon, title };
+          })
+          .filter(({ lat, lon }) => !isNaN(lat) && !isNaN(lon));
+
+        // Initialize map but don't render markers yet
+        initMap();
+
+        // Setup scrollama for step-triggered marker rendering
+        setupScrollama();
+      }
+    });
+  });
+
+  onDestroy(() => {
+    if (map) map.remove();
+    if (scroller) scroller.destroy();
+    mapMarkers.forEach(marker => marker.remove());
+  });
 </script>
 
 <style>
   @import 'mapbox-gl/dist/mapbox-gl.css';
 
+  .scrolly-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+  }
+
+  .graphic-container {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 100%;
+    z-index: 0;
+  }
+
   #map {
     width: 100%;
-    height: 90vh;
+    height: 100%;
+  }
+
+  .scrolly-steps {
+    position: relative;
+    z-index: 1;
+    margin-top: -100vh; /* overlay the map while scrolling */
+    padding-top: 100vh; /* start scrolling after full map is shown */
+  }
+
+  .scrolly-step {
+    margin: 0 auto 80vh auto;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    opacity: 0.4;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    max-width: 600px;
+    border-radius: 8px;
+  }
+
+  .scrolly-step.active {
+    opacity: 1;
+    transform: translateY(0);
   }
 </style>
 
-<div bind:this={mapContainer} id="map"></div>
+<div class="scrolly-container">
+  <div class="graphic-container">
+    <div bind:this={mapContainer} id="map"></div>
+  </div>
+
+  <div class="scrolly-steps">
+    {#each steps as step, i (step.id)}
+      <div class="scrolly-step" class:active={activeIndex === i}>
+        <h3>{step.title}</h3>
+        <p>{step.text}</p>
+      </div>
+    {/each}
+  </div>
+</div>
