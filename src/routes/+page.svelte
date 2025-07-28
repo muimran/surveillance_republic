@@ -4,6 +4,7 @@
   import ExplainerScrolly from '$lib/components/ExplainerScrolly.svelte';
   import BdrMap from '$lib/components/bdrmap.svelte';
   import AnimateLine from '$lib/components/AnimateLine.svelte';
+  import LineExperiment from '$lib/components/LineExperiment.svelte';
 
 
   export let data;
@@ -85,7 +86,15 @@
 <!-- Scrollytelling Component -->
 <BdrMap />
 
-<AnimateLine />
+<div class="nyt-text">
+  <p>The Daily Star shared the list of components purchased by the NTMC between 2018 and 2022 with its in-house network specialists and using information about the components, they reconstructed the ILIS network.</p>
+  <p>The first step of interception was recording and analysing data packets that travelled over a computer network. This involved gaining access to internet infrastructure, tapping undersea fibre optic cables, accessing satellite landing systems, intercepting core routes of Internet Service Providers, and forcing telecom companies to cooperate and share data.</p>
+  <p>They purchased two units of Copper Tap Modules (10/100/1000), which were used to clone unencrypted ethernet traffic. The Tap module separated the incoming and outgoing traffic into two distinct streams and sent them to two separate monitoring ports.</p>
+  <p>They also purchased a Passive Fibre Tap, which is a hardware that mirrors fiber optic traffic and captures high-speed data invisibly. This is then redirected to monitoring ports. For monitoring ports, they purchased six of the Yaana DeepProbe series. These DeepProbes receive internet traffic intercepted from taps and prepare it for inspection.</p>
+  <p>The second step is the decryption of the encrypted traffic. For this, they purchased an SSL (secure sockets layer) decryption platform. SSL is a way to keep data safe when it travels between a browser and a website by locking it with encryption. This device intercepts SSL connections between devices and positions itself in the middle of the connection. When a sender sends traffic to a receiver, it intercepts the incoming traffic halfway, decrypts it, inspects it, reencrypts it, and passes it along to the unsuspecting receiver.</p>
+</div>
+
+<ExplainerScrolly />
 
 <!-- Text below the scrolly -->
 <div class="nyt-text">

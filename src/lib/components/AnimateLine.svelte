@@ -6,9 +6,9 @@
     let mapContainer;
     let map;
     let disabled = true;
-    const steps = 500;
+    const steps = 200;
     let counter = 0;
-  
+
     let pointData;
     let origin;
     let routeData;
@@ -59,13 +59,12 @@
             lightPreset: 'night'
           }
         },
-        center: [-96, 37.8],
-        zoom: 3,
-        pitch: 40
+        center: [90.44150795671293, 23.762713445898452],  
+        zoom: 14
       });
   
-      origin = [-122.414, 37.776];
-      const destination = [-77.032, 38.913];
+      origin = [90.44275857913989, 23.762151498627887];
+      const destination = [90.4368333963124, 23.76258119624564];
   
       routeData = {
         type: 'FeatureCollection',
