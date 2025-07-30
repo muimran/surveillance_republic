@@ -67,45 +67,27 @@
         minZoom: minZoom,
         attribution: '© <a href="https://carto.com/attributions">CARTO</a>'
       }).addTo(map);
-
-      // --- START: GeoJSON Highlighting Logic ---
       
       const countriesInData = new Set(points.map(p => p.country));
 
       function getCountryStyle(feature) {
         const countryNameFromGeoJSON = feature.properties.ADMIN;
-        
-        // --- CHANGED: Added a special condition for Cyprus ---
         const isMatch = 
           countriesInData.has(countryNameFromGeoJSON) ||
           (countryNameFromGeoJSON === 'United States of America' && countriesInData.has('USA')) ||
           (countryNameFromGeoJSON === 'United Kingdom' && countriesInData.has('UK')) ||
-          (countryNameFromGeoJSON === 'N. Cyprus' && countriesInData.has('Cyprus')); // <-- This is the fix
+          (countryNameFromGeoJSON === 'N. Cyprus' && countriesInData.has('Cyprus'));
 
         if (isMatch) {
-          return {
-            fillColor: '#FEEFB3',
-            fillOpacity: 0.7,
-            color: '#E6A23C',
-            weight: 1
-          };
+          return { fillColor: '#FEEFB3', fillOpacity: 0.7, color: '#E6A23C', weight: 1 };
         } else {
-          return {
-            fillOpacity: 0,
-            stroke: false
-          };
+          return { fillOpacity: 0, stroke: false };
         }
       }
 
       fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson')
         .then(response => response.json())
-        .then(data => {
-          L.geoJSON(data, {
-            style: getCountryStyle
-          }).addTo(map);
-        });
-      // --- END: GeoJSON Highlighting Logic ---
-
+        .then(data => { L.geoJSON(data, { style: getCountryStyle }).addTo(map); });
 
       markersLayer = L.layerGroup().addTo(map);
 
@@ -143,7 +125,11 @@
           const importerLabel = point.importers.length > 1 ? 'Importer Agencies' : 'Importer Agency';
           const importerListItems = point.importers.map(imp => `<li>${imp.importer_agency}</li>`).join('');
           const importerHtml = `<div class="tooltip-importers"><strong>${importerLabel}:</strong><ul>${importerListItems}</ul></div>`;
-          marker.bindPopup(`<div class="tooltip-content"><strong>${point.country}</strong><div class="tooltip-amount">Amount: ${point.label_text}</div>${exporterHtml}${importerHtml}</div>`, {
+          
+          // --- CHANGED: Wrapped header content in a new div ---
+          const headerHtml = `<div class="tooltip-header"><strong>${point.country}</strong><div class="tooltip-amount">Amount: ${point.label_text}</div></div>`;
+          
+          marker.bindPopup(`<div class="tooltip-content">${headerHtml}${exporterHtml}${importerHtml}</div>`, {
             className: 'custom-tooltip', maxWidth: 300
           });
         }
@@ -190,7 +176,6 @@
   });
 </script>
 
-<!-- The HTML and Style sections are unchanged -->
 <div class="map-wrapper" style="height: {mapHeight};">
   <div bind:this={mapDiv} id="map" style="height: 100%; width: 100%;"></div>
 
@@ -200,9 +185,12 @@
       class:position-top={tooltipPosition === 'top'}
       class:position-bottom={tooltipPosition === 'bottom'}
     >
+      <!-- --- CHANGED: Wrapped header content in a new div --- -->
       <div class="tooltip-content">
-        <strong>{activePoint.country}</strong>
-        <div class="tooltip-amount">Amount: {activePoint.label_text}</div>
+        <div class="tooltip-header">
+            <strong>{activePoint.country}</strong>
+            <div class="tooltip-amount">Amount: {activePoint.label_text}</div>
+        </div>
         
         {#if activePoint.exporter_companies && activePoint.exporter_companies.length > 0}
           <div class="tooltip-exporters">
@@ -244,7 +232,7 @@
     background-color: #ffffff;
     color: black;
     border-radius: 8px;
-    padding: 12px 15px;
+    padding: 12px 15px; /* This padding is important */
     font-size: 14px;
     line-height: 1.5;
     pointer-events: auto;
@@ -252,19 +240,10 @@
     transition: top 0.2s ease-out, bottom 0.2s ease-out;
   }
 
-  .mobile-tooltip.position-top {
-    top: 15px;
-    bottom: auto;
-  }
+  .mobile-tooltip.position-top { top: 15px; bottom: auto; }
+  .mobile-tooltip.position-bottom { bottom: 15px; top: auto; }
   
-  .mobile-tooltip.position-bottom {
-    bottom: 15px;
-    top: auto;
-  }
-  
-  #map {
-    touch-action: pan-x pan-y;
-  }
+  #map { touch-action: pan-x pan-y; }
 
   :global(.leaflet-marker-icon.fixed-marker) {
     display: flex;
@@ -277,25 +256,16 @@
   }
 
   @keyframes grow-shrink {
-    0% {
-      transform: scale(0);
-      opacity: 0;
-    }
-    50% {
-      transform: scale(1.2);
-      opacity: 0.6;
-    }
-    100% {
-      transform: scale(1);
-      opacity: 0.6;
-    }
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); opacity: 0.6; }
+    100% { transform: scale(1); opacity: 0.6; }
   }
 
   :global(.custom-tooltip .leaflet-popup-content-wrapper) {
     background-color: #ffffff !important;
     color: black !important;
     border-radius: 8px;
-    padding: 10px;
+    padding: 10px; /* This padding is important */
     font-size: 14px;
     width: auto;
   }
@@ -313,16 +283,55 @@
     width: 100%;
   }
 
-  :global(.tooltip-content > strong:first-child) {
-    font-size: 18px;
+  /* --- START: CHANGED AND NEW STYLES --- */
+
+  /* This is the new header container */
+  :global(.tooltip-header) {
+    background: black;
+    color: white;
+    /* Round the top corners to match the parent tooltip */
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    /* Add space between the header and the content below */
+    margin-bottom: 8px; 
+  }
+
+  /* Specific rule for mobile to handle its padding */
+  .mobile-tooltip .tooltip-header {
+    /* Use negative margins to cancel out the parent's padding */
+    margin-top: -12px;
+    margin-left: -15px;
+    margin-right: -15px;
+    /* Add padding back inside the header itself */
+    padding: 12px 15px 0 15px;
+  }
+
+  /* Specific rule for desktop to handle its padding */
+  :global(.custom-tooltip .tooltip-header) {
+    /* Use negative margins to cancel out the parent's padding */
+    margin-top: -10px;
+    margin-left: -10px;
+    margin-right: -10px;
+    /* Add padding back inside the header itself */
+    padding: 10px 10px 0 10px;
   }
   
+  /* Style the country name inside the new header */
+  :global(.tooltip-header > strong) {
+    font-size: 18px;
+    color: white; /* Ensure text is white */
+  }
+  
+  /* Style the amount and the line separator */
   :global(.tooltip-amount) {
     padding-top: 5px;
     padding-bottom: 8px;
-    margin-bottom: 8px;
-    border-bottom: 1.5px solid rgb(0, 0, 0);
+    margin-bottom: 0; /* Margin is now on the header */
+    /* Change border color to be visible on black */
+    border-bottom: 1.5px solid #444; 
   }
+
+  /* --- END: CHANGED AND NEW STYLES --- */
 
   :global(.tooltip-importers),
   :global(.tooltip-exporters) {
