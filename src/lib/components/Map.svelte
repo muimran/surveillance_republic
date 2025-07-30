@@ -126,7 +126,7 @@
           const importerListItems = point.importers.map(imp => `<li>${imp.importer_agency}</li>`).join('');
           const importerHtml = `<div class="tooltip-importers"><strong>${importerLabel}:</strong><ul>${importerListItems}</ul></div>`;
           
-          // --- CHANGED: Wrapped header content in a new div ---
+          // --- CHANGED: Wrapped header content in a new div for styling ---
           const headerHtml = `<div class="tooltip-header"><strong>${point.country}</strong><div class="tooltip-amount">Amount: ${point.label_text}</div></div>`;
           
           marker.bindPopup(`<div class="tooltip-content">${headerHtml}${exporterHtml}${importerHtml}</div>`, {
@@ -185,8 +185,8 @@
       class:position-top={tooltipPosition === 'top'}
       class:position-bottom={tooltipPosition === 'bottom'}
     >
-      <!-- --- CHANGED: Wrapped header content in a new div --- -->
       <div class="tooltip-content">
+        <!-- --- CHANGED: Wrapped header content in a new div for styling --- -->
         <div class="tooltip-header">
             <strong>{activePoint.country}</strong>
             <div class="tooltip-amount">Amount: {activePoint.label_text}</div>
@@ -232,7 +232,7 @@
     background-color: #ffffff;
     color: black;
     border-radius: 8px;
-    padding: 12px 15px; /* This padding is important */
+    padding: 12px 15px; /* This padding creates the space the header will fill */
     font-size: 14px;
     line-height: 1.5;
     pointer-events: auto;
@@ -265,7 +265,7 @@
     background-color: #ffffff !important;
     color: black !important;
     border-radius: 8px;
-    padding: 10px; /* This padding is important */
+    padding: 10px; /* This padding creates the space the header will fill */
     font-size: 14px;
     width: auto;
   }
@@ -283,9 +283,9 @@
     width: 100%;
   }
 
-  /* --- START: CHANGED AND NEW STYLES --- */
+  /* --- START: FIX FOR TOOLTIP HEADER --- */
 
-  /* This is the new header container */
+  /* This is the new shared header container */
   :global(.tooltip-header) {
     background: black;
     color: white;
@@ -296,7 +296,7 @@
     margin-bottom: 8px; 
   }
 
-  /* Specific rule for mobile to handle its padding */
+  /* FIX: Specific rule for mobile to remove the white border */
   .mobile-tooltip .tooltip-header {
     /* Use negative margins to cancel out the parent's padding */
     margin-top: -12px;
@@ -306,7 +306,7 @@
     padding: 12px 15px 0 15px;
   }
 
-  /* Specific rule for desktop to handle its padding */
+  /* FIX: Specific rule for desktop to match the mobile style */
   :global(.custom-tooltip .tooltip-header) {
     /* Use negative margins to cancel out the parent's padding */
     margin-top: -10px;
@@ -326,12 +326,12 @@
   :global(.tooltip-amount) {
     padding-top: 5px;
     padding-bottom: 8px;
-    margin-bottom: 0; /* Margin is now on the header */
-    /* Change border color to be visible on black */
+    margin-bottom: 0; /* Margin is now on the header container */
+    /* Change border color to be visible on the black background */
     border-bottom: 1.5px solid #444; 
   }
 
-  /* --- END: CHANGED AND NEW STYLES --- */
+  /* --- END: FIX FOR TOOLTIP HEADER --- */
 
   :global(.tooltip-importers),
   :global(.tooltip-exporters) {
