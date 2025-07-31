@@ -10,7 +10,7 @@
   
     <!-- Right half with Image -->
     <div class="header-half image-side">
-      <img src="/images/header.png" alt="A descriptive alt text" class="header-image" />
+      <img src="/images/header.gif" alt="A descriptive alt text" class="header-image" />
     </div>
   </div>
   

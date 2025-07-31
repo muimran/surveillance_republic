@@ -11,13 +11,13 @@
     const steps = [
       {
         id: 1,
-        image: '/images/step1.png',
+        image: '/images/step1.gif',
         title: "1. Traffic Interception",
         text: "Copper Tap M odules clone unencrypted ethernet traffic from network links, providing a complete and passive copy of all data for analysis without impacting network performance."
       },
       {
         id: 2,
-        image: '/images/step2.png',
+        image: '/images/step2.gif',
         title: "2. SSL Decryption",
         text: "The SSL decryption platform intercepts secure connections, decrypts the traffic using managed certificates, and forwards the plaintext data for inspection by security tools."
       },
