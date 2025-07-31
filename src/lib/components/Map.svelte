@@ -28,8 +28,19 @@
     return baseSize + Math.sqrt(value) / scalingFactor;
   }
 
-  // --- CHANGED: Function now accepts currentZoom ---
-  // --- THIS FUNCTION CONTAINS THE CORRECTED LOGIC ---
+  function formatExportValue(value) {
+    if (value === null || typeof value === 'undefined') {
+      return '';
+    }
+    if (value >= 10000000) { 
+      return `Tk ${(value / 10000000).toFixed(2)} cr`;
+    }
+    if (value >= 100000) {
+      return `Tk ${(value / 100000).toFixed(2)} lakh`;
+    }
+    return `Tk ${new Intl.NumberFormat('en-IN').format(value)}`;
+  }
+
   function createCircleIcon(point, size, withAnimation = false, currentZoom) {
     if (!window.L) return;
     const markerColor = '#e63946';
@@ -38,25 +49,19 @@
     let markerHtml = '';
 
     if (currentZoom >= 4 && point.label_text) {
-      // Step 1: Calculate font size, with a min of 10 and max of 22.
       const fontSize = Math.min(12, Math.max(11, size / 4));
       const displayText = point.label_text.replace('Tk', '').trim();
 
-      // --- THE FIX IS HERE: Changed '===' to '<=' ---
-      // This now correctly handles all the smallest circles.
       if (fontSize <= 11) {
-        // --- CASE 1: FONT SIZE IS 10 OR LESS (LABEL OUTSIDE) ---
         const labelHtml = `<span style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 2px; color: #333; font-weight: bold; font-size: 11px; white-space: nowrap;">${displayText}</span>`;
         markerHtml = `<div style="width: ${size}px; height: ${size}px; background-color: ${markerColor}; border-radius: 50%; opacity: 0.6; position: relative;">${labelHtml}</div>`;
       
       } else {
-        // --- CASE 2: FONT SIZE IS > 10 (LABEL INSIDE) ---
         const labelHtml = `<span style="color: white; font-weight: bold; font-size: ${fontSize.toFixed(1)}px; line-height: 1;">${displayText}</span>`;
         markerHtml = `<div style="width: ${size}px; height: ${size}px; background-color: ${markerColor}; border-radius: 50%; opacity: 0.6; display: flex; justify-content: center; align-items: center;">${labelHtml}</div>`;
       }
 
     } else {
-      // If there's no text, just draw the circle.
       markerHtml = `<div style="width: ${size}px; height: ${size}px; background-color: ${markerColor}; border-radius: 50%; opacity: 0.6;"></div>`;
     }
     
@@ -134,12 +139,10 @@
 
       const createMarker = (point) => {
         const size = valueToPixelSize(point.value);
-        // --- CHANGED: Get current zoom and pass it to the icon creation ---
         const currentZoom = map.getZoom();
         const divIcon = createCircleIcon(point, size, true, currentZoom);
         const marker = L.marker([point.lat, point.long], { icon: divIcon });
 
-        // Associate point data with the marker for easy lookup later
         marker.pointData = point;
 
         if (isMobile) {
@@ -152,7 +155,11 @@
         } else {
           let exporterHtml = '';
           if (point.exporter_companies && point.exporter_companies.length > 0) {
-            const exporterListItems = point.exporter_companies.map(exp => `<li>${exp.exporter_company}</li>`).join('');
+            const exporterListItems = point.exporter_companies.map(exp => {
+                const formattedValue = formatExportValue(exp.export_value);
+                const valueHtml = formattedValue ? ` - <strong>${formattedValue}</strong>` : '';
+                return `<li>${exp.exporter_company}${valueHtml}</li>`;
+            }).join('');
             exporterHtml = `<div class="tooltip-exporters"><strong>Exporter Companies:</strong><ul>${exporterListItems}</ul></div>`;
           }
           const importerLabel = point.importers.length > 1 ? 'Importer Agencies' : 'Importer Agency';
@@ -168,7 +175,7 @@
 
         setTimeout(() => {
           const finalIcon = createCircleIcon(point, size, false, map.getZoom());
-          if(marker && marker._icon) { // Check if marker still exists
+          if(marker && marker._icon) {
              marker.setIcon(finalIcon);
           }
         }, 1500);
@@ -176,14 +183,12 @@
         return marker;
       };
       
-      // --- CHANGED: This function now handles showing/hiding text on zoom ---
       const updateCircleMarkers = () => {
         const currentZoom = map.getZoom();
         markersLayer.eachLayer(layer => {
           if (layer instanceof L.Marker && layer.pointData) {
             const point = layer.pointData;
             const size = valueToPixelSize(point.value);
-            // Recreate the icon with the new zoom level
             const newIcon = createCircleIcon(point, size, false, currentZoom);
             layer.setIcon(newIcon);
           }
@@ -211,8 +216,6 @@
   });
 </script>
 
-<!-- HTML and Style sections remain unchanged -->
-
 <div class="map-wrapper" style="height: {mapHeight};">
   <div bind:this={mapDiv} id="map" style="height: 100%; width: 100%;"></div>
 
@@ -232,8 +235,15 @@
           <div class="tooltip-exporters">
             <strong>Exporter Companies:</strong>
             <ul>
+              <!-- ### FIX IS HERE ### -->
               {#each activePoint.exporter_companies as exporter}
-                <li>{exporter.exporter_company}</li>
+                {@const formattedValue = formatExportValue(exporter.export_value)}
+                <li>
+                  {exporter.exporter_company}
+                  {#if formattedValue}
+                    - <strong>{formattedValue}</strong>
+                  {/if}
+                </li>
               {/each}
             </ul>
           </div>
@@ -253,6 +263,7 @@
 </div>
 
 <style>
+  /* All styles remain the same */
   .map-wrapper {
     position: relative;
     width: 100vw;
@@ -272,7 +283,6 @@
     background-color: #ffffff;
     color: black;
     border-radius: 8px;
-    /* This padding is what we need to overcome */
     padding: 12px 15px; 
     font-size: 14px;
     line-height: 1.5;
@@ -288,9 +298,7 @@
     color: white;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
-    /* Use negative margins to cancel parent's padding */
     margin: -12px -15px 8px -15px;
-    /* Add padding back inside the header itself */
     padding: 12px 15px 0 15px;
   }
 
@@ -301,7 +309,7 @@
   .mobile-tooltip .tooltip-amount {
     padding-top: 5px;
     padding-bottom: 8px;
-    border-bottom: 1.5px solid #444; /* Darker border for black bg */
+    border-bottom: 1.5px solid #444;
   }
 
   .mobile-tooltip .tooltip-importers,
@@ -335,7 +343,6 @@
     background-color: #ffffff !important;
     color: black !important;
     border-radius: 8px;
-    /* This padding is what we need to overcome */
     padding: 10px;
     font-size: 14px;
     width: auto;
@@ -353,9 +360,7 @@
     color: white;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
-    /* Use negative margins to cancel parent's padding */
     margin: -10px -10px 8px -10px;
-    /* Add padding back inside the header itself */
     padding: 10px 10px 0 10px;
   }
 

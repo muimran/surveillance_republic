@@ -18,9 +18,9 @@
   
       const agencyColors = {
         [agencies[0]]: '#FF6384',
-        [agencies[1]]: '#70327f',
-        [agencies[2]]: '#e63946',
-        [agencies[3]]: '#FEEFB3'
+        [agencies[1]]: '#FFF380',
+        [agencies[2]]: '#c00007',
+        [agencies[3]]: '#242344' 
       };
   
       const series = agencies.map(agency => {
