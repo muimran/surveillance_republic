@@ -4,6 +4,7 @@
 
 <script>
   import { onMount, onDestroy } from 'svelte';
+  import { base } from '$app/paths'; // <-- 1. IMPORT ADDED HERE
   import mapboxgl from 'mapbox-gl';
   import Papa from 'papaparse';
   import scrollama from 'scrollama';
@@ -130,7 +131,8 @@
     });
 
     map.on('load', async () => {
-      const polyData = await fetch('/poly.geojson').then(r => r.json());
+      // <-- 2. PATH CORRECTED HERE
+      const polyData = await fetch(`${base}/poly.geojson`).then(r => r.json());
 
       map.addSource('polygon', { type: 'geojson', data: polyData });
 
@@ -194,7 +196,8 @@
   }
 
   onMount(async () => {
-    const response = await fetch('/bgb.csv');
+    // <-- 2. PATH CORRECTED HERE
+    const response = await fetch(`${base}/bgb.csv`);
     const csvText = await response.text();
 
     Papa.parse(csvText, {
