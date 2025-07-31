@@ -9,7 +9,7 @@ const config = {
       fallback: null
     }),
     paths: {
-      base: ''  // Root path, no subfolder
+      base: '/suv'  // Root path, no subfolder
     }
   }
 };
