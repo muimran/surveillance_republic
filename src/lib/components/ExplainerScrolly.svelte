@@ -26,6 +26,12 @@
         image: '/images/step3.png',
         title: "3. Behavior Analysis",
         text: "DeepProbe monitors analyze metadata patterns and content flows from the decrypted traffic, using machine learning to detect anomalies and identify potential threats in real-time."
+      },
+      {
+        id: 4,
+        image: '/images/step4.png',
+        title: "4. Behavior Analysis",
+        text: "Step:4  monitors analyze metadata patterns and content flows from the decrypted traffic, using machine learning to detect anomalies and identify potential threats in real-time."
       }
     ];
   
@@ -58,7 +64,7 @@
       scroller
         .setup({
           step: '.scrolly-step',
-          offset: 0.1,
+          offset: 0.85,
           debug: false
         })
         .onStepEnter(handleStepEnter)
