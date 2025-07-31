@@ -28,13 +28,41 @@
     return baseSize + Math.sqrt(value) / scalingFactor;
   }
 
-  function createCircleIcon(point, size, withAnimation = false) {
+  // --- CHANGED: Function now accepts currentZoom ---
+  // --- THIS FUNCTION CONTAINS THE CORRECTED LOGIC ---
+  function createCircleIcon(point, size, withAnimation = false, currentZoom) {
     if (!window.L) return;
     const markerColor = '#e63946';
     const className = withAnimation ? 'fixed-marker with-animation leaflet-marker-icon' : 'fixed-marker leaflet-marker-icon';
+    
+    let markerHtml = '';
+
+    if (currentZoom >= 4 && point.label_text) {
+      // Step 1: Calculate font size, with a min of 10 and max of 22.
+      const fontSize = Math.min(12, Math.max(11, size / 4));
+      const displayText = point.label_text.replace('Tk', '').trim();
+
+      // --- THE FIX IS HERE: Changed '===' to '<=' ---
+      // This now correctly handles all the smallest circles.
+      if (fontSize <= 11) {
+        // --- CASE 1: FONT SIZE IS 10 OR LESS (LABEL OUTSIDE) ---
+        const labelHtml = `<span style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 2px; color: #333; font-weight: bold; font-size: 11px; white-space: nowrap;">${displayText}</span>`;
+        markerHtml = `<div style="width: ${size}px; height: ${size}px; background-color: ${markerColor}; border-radius: 50%; opacity: 0.6; position: relative;">${labelHtml}</div>`;
+      
+      } else {
+        // --- CASE 2: FONT SIZE IS > 10 (LABEL INSIDE) ---
+        const labelHtml = `<span style="color: white; font-weight: bold; font-size: ${fontSize.toFixed(1)}px; line-height: 1;">${displayText}</span>`;
+        markerHtml = `<div style="width: ${size}px; height: ${size}px; background-color: ${markerColor}; border-radius: 50%; opacity: 0.6; display: flex; justify-content: center; align-items: center;">${labelHtml}</div>`;
+      }
+
+    } else {
+      // If there's no text, just draw the circle.
+      markerHtml = `<div style="width: ${size}px; height: ${size}px; background-color: ${markerColor}; border-radius: 50%; opacity: 0.6;"></div>`;
+    }
+    
     return window.L.divIcon({
       className: className,
-      html: `<div style="width: ${size}px; height: ${size}px; background-color: ${markerColor}; border-radius: 50%; opacity: 0.6;"></div>`,
+      html: markerHtml,
       iconSize: [size, size],
       iconAnchor: [size / 2, size / 2]
     });
@@ -106,8 +134,13 @@
 
       const createMarker = (point) => {
         const size = valueToPixelSize(point.value);
-        const divIcon = createCircleIcon(point, size, true);
+        // --- CHANGED: Get current zoom and pass it to the icon creation ---
+        const currentZoom = map.getZoom();
+        const divIcon = createCircleIcon(point, size, true, currentZoom);
         const marker = L.marker([point.lat, point.long], { icon: divIcon });
+
+        // Associate point data with the marker for easy lookup later
+        marker.pointData = point;
 
         if (isMobile) {
           marker.on('click', (e) => {
@@ -126,7 +159,6 @@
           const importerListItems = point.importers.map(imp => `<li>${imp.importer_agency}</li>`).join('');
           const importerHtml = `<div class="tooltip-importers"><strong>${importerLabel}:</strong><ul>${importerListItems}</ul></div>`;
           
-          // --- CHANGED: Wrapped header content in a new div for styling ---
           const headerHtml = `<div class="tooltip-header"><strong>${point.country}</strong><div class="tooltip-amount">Amount: ${point.label_text}</div></div>`;
           
           marker.bindPopup(`<div class="tooltip-content">${headerHtml}${exporterHtml}${importerHtml}</div>`, {
@@ -135,22 +167,25 @@
         }
 
         setTimeout(() => {
-          const finalIcon = createCircleIcon(point, size, false);
-          marker.setIcon(finalIcon);
+          const finalIcon = createCircleIcon(point, size, false, map.getZoom());
+          if(marker && marker._icon) { // Check if marker still exists
+             marker.setIcon(finalIcon);
+          }
         }, 1500);
 
         return marker;
       };
-
+      
+      // --- CHANGED: This function now handles showing/hiding text on zoom ---
       const updateCircleMarkers = () => {
+        const currentZoom = map.getZoom();
         markersLayer.eachLayer(layer => {
-          if (layer instanceof L.Marker) {
-            const point = points.find(p => p.lat === layer.getLatLng().lat && p.long === layer.getLatLng().lng);
-            if (point) {
-              const size = valueToPixelSize(point.value);
-              const newIcon = createCircleIcon(point, size, false);
-              layer.setIcon(newIcon);
-            }
+          if (layer instanceof L.Marker && layer.pointData) {
+            const point = layer.pointData;
+            const size = valueToPixelSize(point.value);
+            // Recreate the icon with the new zoom level
+            const newIcon = createCircleIcon(point, size, false, currentZoom);
+            layer.setIcon(newIcon);
           }
         });
       };
@@ -176,6 +211,8 @@
   });
 </script>
 
+<!-- HTML and Style sections remain unchanged -->
+
 <div class="map-wrapper" style="height: {mapHeight};">
   <div bind:this={mapDiv} id="map" style="height: 100%; width: 100%;"></div>
 
@@ -186,7 +223,6 @@
       class:position-bottom={tooltipPosition === 'bottom'}
     >
       <div class="tooltip-content">
-        <!-- --- CHANGED: Wrapped header content in a new div for styling --- -->
         <div class="tooltip-header">
             <strong>{activePoint.country}</strong>
             <div class="tooltip-amount">Amount: {activePoint.label_text}</div>
@@ -221,7 +257,11 @@
     position: relative;
     width: 100vw;
   }
+  #map { 
+    touch-action: pan-x pan-y; 
+  }
 
+  /* --- Styles for Mobile Tooltip (Svelte Component) --- */
   .mobile-tooltip {
     position: absolute;
     left: 50%;
@@ -232,135 +272,142 @@
     background-color: #ffffff;
     color: black;
     border-radius: 8px;
-    padding: 12px 15px; /* This padding creates the space the header will fill */
+    /* This padding is what we need to overcome */
+    padding: 12px 15px; 
     font-size: 14px;
     line-height: 1.5;
     pointer-events: auto;
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     transition: top 0.2s ease-out, bottom 0.2s ease-out;
   }
-
   .mobile-tooltip.position-top { top: 15px; bottom: auto; }
   .mobile-tooltip.position-bottom { bottom: 15px; top: auto; }
   
-  #map { touch-action: pan-x pan-y; }
-
-  :global(.leaflet-marker-icon.fixed-marker) {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  :global(.fixed-marker.with-animation > div) {
-    animation: grow-shrink 1.5s ease forwards;
-  }
-
-  @keyframes grow-shrink {
-    0% { transform: scale(0); opacity: 0; }
-    50% { transform: scale(1.2); opacity: 0.6; }
-    100% { transform: scale(1); opacity: 0.6; }
-  }
-
-  :global(.custom-tooltip .leaflet-popup-content-wrapper) {
-    background-color: #ffffff !important;
-    color: black !important;
-    border-radius: 8px;
-    padding: 10px; /* This padding creates the space the header will fill */
-    font-size: 14px;
-    width: auto;
-  }
-
-  :global(.custom-tooltip .leaflet-popup-content) {
-    margin: 0;
-    line-height: 1.5;
-  }
-
-  :global(.custom-tooltip .leaflet-popup-tip) {
-    background-color: #ffffff !important;
-  }
-
-  .tooltip-content {
-    width: 100%;
-  }
-
-  /* --- START: FIX FOR TOOLTIP HEADER --- */
-
-  /* This is the new shared header container */
-  :global(.tooltip-header) {
+  .mobile-tooltip .tooltip-header {
     background: black;
     color: white;
-    /* Round the top corners to match the parent tooltip */
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
-    /* Add space between the header and the content below */
-    margin-bottom: 8px; 
-  }
-
-  /* FIX: Specific rule for mobile to remove the white border */
-  .mobile-tooltip .tooltip-header {
-    /* Use negative margins to cancel out the parent's padding */
-    margin-top: -12px;
-    margin-left: -15px;
-    margin-right: -15px;
+    /* Use negative margins to cancel parent's padding */
+    margin: -12px -15px 8px -15px;
     /* Add padding back inside the header itself */
     padding: 12px 15px 0 15px;
   }
 
-  /* FIX: Specific rule for desktop to match the mobile style */
-  :global(.custom-tooltip .tooltip-header) {
-    /* Use negative margins to cancel out the parent's padding */
-    margin-top: -10px;
-    margin-left: -10px;
-    margin-right: -10px;
-    /* Add padding back inside the header itself */
-    padding: 10px 10px 0 10px;
-  }
-  
-  /* Style the country name inside the new header */
-  :global(.tooltip-header > strong) {
+  .mobile-tooltip .tooltip-header > strong {
     font-size: 18px;
-    color: white; /* Ensure text is white */
   }
-  
-  /* Style the amount and the line separator */
-  :global(.tooltip-amount) {
+
+  .mobile-tooltip .tooltip-amount {
     padding-top: 5px;
     padding-bottom: 8px;
-    margin-bottom: 0; /* Margin is now on the header container */
-    /* Change border color to be visible on the black background */
-    border-bottom: 1.5px solid #444; 
+    border-bottom: 1.5px solid #444; /* Darker border for black bg */
   }
 
-  /* --- END: FIX FOR TOOLTIP HEADER --- */
-
-  :global(.tooltip-importers),
-  :global(.tooltip-exporters) {
+  .mobile-tooltip .tooltip-importers,
+  .mobile-tooltip .tooltip-exporters {
     word-wrap: break-word;
   }
-
-  :global(.tooltip-importers) {
+  .mobile-tooltip .tooltip-importers {
     margin-top: 8px;
   }
-
-  :global(.tooltip-importers strong),
-  :global(.tooltip-exporters strong) {
+  .mobile-tooltip .tooltip-importers strong,
+  .mobile-tooltip .tooltip-exporters strong {
     font-size: 14px;
     font-weight: bold;
     color: black;
   }
-
-  :global(.tooltip-importers ul),
-  :global(.tooltip-exporters ul) {
+  .mobile-tooltip .tooltip-importers ul,
+  .mobile-tooltip .tooltip-exporters ul {
     list-style-type: none;
     padding-left: 0;
     margin-top: 4px;
     margin-bottom: 0;
   }
-
-  :global(.tooltip-importers li),
-  :global(.tooltip-exporters li) {
+  .mobile-tooltip .tooltip-importers li,
+  .mobile-tooltip .tooltip-exporters li {
     line-height: 1.3;
     padding-bottom: 2px;
+  }
+
+  /* --- Styles for Desktop Tooltip (Global, for Leaflet) --- */
+  :global(.custom-tooltip .leaflet-popup-content-wrapper) {
+    background-color: #ffffff !important;
+    color: black !important;
+    border-radius: 8px;
+    /* This padding is what we need to overcome */
+    padding: 10px;
+    font-size: 14px;
+    width: auto;
+  }
+  :global(.custom-tooltip .leaflet-popup-content) {
+    margin: 0;
+    line-height: 1.5;
+  }
+  :global(.custom-tooltip .leaflet-popup-tip) {
+    background-color: #ffffff !important;
+  }
+
+  :global(.custom-tooltip .tooltip-header) {
+    background: black;
+    color: white;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    /* Use negative margins to cancel parent's padding */
+    margin: -10px -10px 8px -10px;
+    /* Add padding back inside the header itself */
+    padding: 10px 10px 0 10px;
+  }
+
+  :global(.custom-tooltip .tooltip-header > strong) {
+    font-size: 18px;
+  }
+
+  :global(.custom-tooltip .tooltip-amount) {
+    padding-top: 5px;
+    padding-bottom: 8px;
+    border-bottom: 1.5px solid #444;
+  }
+
+  :global(.custom-tooltip .tooltip-importers),
+  :global(.custom-tooltip .tooltip-exporters) {
+    word-wrap: break-word;
+  }
+  :global(.custom-tooltip .tooltip-importers) {
+    margin-top: 8px;
+  }
+  :global(.custom-tooltip .tooltip-importers strong),
+  :global(.custom-tooltip .tooltip-exporters strong) {
+    font-size: 14px;
+    font-weight: bold;
+    color: black;
+  }
+  :global(.custom-tooltip .tooltip-importers ul),
+  :global(.custom-tooltip .tooltip-exporters ul) {
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 4px;
+    margin-bottom: 0;
+  }
+  :global(.custom-tooltip .tooltip-importers li),
+  :global(.custom-tooltip .tooltip-exporters li) {
+    line-height: 1.3;
+    padding-bottom: 2px;
+  }
+
+  /* --- Other Global and Shared Styles --- */
+  :global(.leaflet-marker-icon.fixed-marker) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  :global(.fixed-marker.with-animation > div) {
+    animation: grow-shrink 1.5s ease forwards;
+  }
+  @keyframes grow-shrink {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); opacity: 0.6; }
+    100% { transform: scale(1); opacity: 0.6; }
   }
 
   @media (max-width: 600px) {

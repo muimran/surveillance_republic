@@ -1,21 +1,21 @@
 country,lat,long,value,label_value,company,company_value,importer,importer_value,export_barriers
-Bulgaria,42.7339,25.4858,30045005,Tk 3 cr,,,,,Y
-Canada,56.1304,-106.3468,884559696,Tk 88.5 cr,,,,,Y
-China,35.8617,104.1954,35983783,Tk 3.6 cr,,,,,N
-Cyprus,35.1264,33.4299,2098832199,Tk 210 cr,,,,,Y
-Czech Republic,49.8175,15.473,182348956,Tk 18.2 cr,,,,,Y
-France,46.6034,1.8883,220629,Tk 2.2 lakh,,,,,Y
-Germany,51.1657,10.4515,602948696,Tk 60.3 cr,,,,,Y
-Malaysia,3.139,101.6869,28486641,Tk 2.8 cr,,,,,N
-Netherlands,52.1326,5.2913,28839198,Tk 2.8 cr,,,,,Y
-Philippines,13.4102,122.5609,969195,Tk 9.7 lakh,,,,,N
-Singapore,1.3521,103.8198,4110668165,Tk 411 cr,,,,,N
-Switzerland,46.8182,8.2275,443233240,Tk 44.3 cr,,,,,Y
-Taiwan,23.6978,120.9605,4575515,Tk 45.8 lakh,,,,,N
-Turkey,38.9637,35.2433,344177365,Tk 34.4 cr,,,,,N
-United Arab Emirates,23.4241,53.8478,92872673,Tk 9.3 cr,,,,,N
-United Kingdom,55.3781,-3.436,68502749,Tk 6.8 cr,,,,,Y
-United States of America,39.8283,-98.5795,714104654,Tk 71.4 cr,,,,,Y
+Bulgaria,42.7339,25.4858,30045005, 3 cr,,,,,Y
+Canada,56.1304,-106.3468,884559696, 88.5 cr,,,,,Y
+China,35.8617,104.1954,35983783, 3.6 cr,,,,,N
+Cyprus,35.1264,33.4299,2098832199, 210 cr,,,,,Y
+Czech Republic,49.8175,15.473,182348956, 18.2 cr,,,,,Y
+France,46.6034,1.8883,220629, 2.2 lakh,,,,,Y
+Germany,51.1657,10.4515,602948696, 60.3 cr,,,,,Y
+Malaysia,3.139,101.6869,28486641, 2.8 cr,,,,,N
+Netherlands,52.1326,5.2913,28839198, 2.8 cr,,,,,Y
+Philippines,13.4102,122.5609,969195, 9.7 lakh,,,,,N
+Singapore,1.3521,103.8198,4110668165, 411 cr,,,,,N
+Switzerland,46.8182,8.2275,443233240, 44.3 cr,,,,,Y
+Taiwan,23.6978,120.9605,4575515, 45.8 lakh,,,,,N
+Turkey,38.9637,35.2433,344177365, 34.4 cr,,,,,N
+United Arab Emirates,23.4241,53.8478,92872673, 9.3 cr,,,,,N
+United Kingdom,55.3781,-3.436,68502749, 6.8 cr,,,,,Y
+United States of America,39.8283,-98.5795,714104654, 71.4 cr,,,,,Y
 ,,,,,,,,,
 ,,,,,,,,,
 ,,,,,,,,,

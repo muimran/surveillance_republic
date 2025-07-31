@@ -161,25 +161,34 @@
       position: relative;
     }
   
+    /* --- MODIFIED BUTTON STYLE FOR TRUE CENTERING --- */
     .reset-button {
       position: absolute;
-      top: 45px;
-      left: 300px;
-      padding: 6px 12px;
-      background-color: #007bff;
-      color: white;
+      top: 50px; /* Kept it near the top */
+      
+      /* This is the CSS for true horizontal centering */
+      left: 50%;
+      transform: translateX(-50%);
+      
+      /* Your requested style changes */
+      padding: 5px 10px; 
+      background-color: #6c757d; 
+      color: white; 
       border: none;
       border-radius: 4px;
-      font-size: 0.9rem;
+      font-size: 10px;
+      
       cursor: pointer;
       z-index: 10;
+      transition: background-color 0.2s ease;
     }
   
     .reset-button:hover {
-      background-color: #0056b3;
+      background-color: #5a6268;
     }
-  
+    
     .note {
+      /* ... your note styles ... */
       margin-top: 0px;
       font-style: italic;
       color: #e63946;
@@ -187,9 +196,8 @@
       font-size: 14px;
     }
     :global(.highcharts-credits) {
-    display: none !important;
-  }
-
+      display: none !important;
+    }
   </style>
   
   <div class="chart-wrapper">
