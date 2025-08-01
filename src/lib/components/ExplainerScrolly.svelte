@@ -4,36 +4,35 @@
 
 <script>
   import { onMount, onDestroy } from 'svelte';
-  import { base } from '$app/paths'; // <-- 1. IMPORT ADDED HERE
+  import { base } from '$app/paths';
   import scrollama from 'scrollama';
 
   export let externalSteps = 0; // Number of external scrolly-step divs above this component
 
-  // <-- 2. IMAGE PATHS CORRECTED HERE
   const steps = [
     {
       id: 1,
       image: `${base}/images/step1.gif`,
       title: "1. Traffic Interception",
-      text: "Copper Tap M odules clone unencrypted ethernet traffic from network links, providing a complete and passive copy of all data for analysis without impacting network performance."
+      text: "Intercept all types of electronic, data and mobile communication systems originating, terminating and passing through Bangladesh. This includes phone calls and text messages transmitted via both cell phone and messaging applications, as well as, locations."
     },
     {
       id: 2,
       image: `${base}/images/step2.gif`,
-      title: "2. SSL Decryption",
-      text: "The SSL decryption platform intercepts secure connections, decrypts the traffic using managed certificates, and forwards the plaintext data for inspection by security tools."
+      title: "2. Tapping National Gateways",
+      text: "To do this, the system collects all internet communication from the national gateway and national internet exchange levels. Copper Tap Modules splits incoming and outgoing data streams and sends them to separate monitoring ports. Meanwhile, a Passive Fibre Tap mirrors high-speed fibre optic traffic and redirects it for analysis. These feeds are then processed by DeepProbe units, which prepare the data for inspection.The SSL decryption platform intercepts secure connections, decrypts the traffic using managed certificates, and forwards the plaintext data for inspection by security tools."
     },
     {
       id: 3,
       image: `${base}/images/step3.png`,
-      title: "3. Behavior Analysis",
-      text: "DeepProbe monitors analyze metadata patterns and content flows from the decrypted traffic, using machine learning to detect anomalies and identify potential threats in real-time."
+      title: "3. Decryption and Target Profiling",
+      text: "The DeepProbe units identify which application is being used (e.g., WhatsApp, Signal), timestamps, data volumes, IP addresses, communication types, and user behaviour patterns. Meanwhile, a GSM/Signalling Network Monitoring Platform extracts metadata from voice calls, SMS, and mobile internet traffic. These allow NTMC to build user profiles based on activity patterns, even without accessing message content. In case of encrypted data, a SSL Decryption Platform decrypts secure connections and then re-encrypts it before forwarding the data."
     },
     {
       id: 4,
       image: `${base}/images/step4.png`,
-      title: "4. Behavior Analysis",
-      text: "Step:4  monitors analyze metadata patterns and content flows from the decrypted traffic, using machine learning to detect anomalies and identify potential threats in real-time."
+      title: "4. Mass Storage and Mass Surveillance",
+      text: "A digital command centre inside the NTMC premises collects and collates all the intercepted information in massive volumes. All law enforcement agencies can access this server."
     }
   ];
 
@@ -50,7 +49,6 @@
   }
 
   function handleStepExit(response) {
-
     if (
       response.index === externalSteps + steps.length - 1 &&
       response.direction === 'down'
@@ -86,6 +84,8 @@
   .scrolly-container {
     max-width: 700px;
     margin: 4rem auto;
+    margin-top: 1rem;
+    margin-bottom: 0rem;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     position: relative;
   }
@@ -103,10 +103,11 @@
   .scrolly-steps {
     position: relative;
     z-index: 10;
+    padding: 1rem 0;
   }
 
   .scrolly-step {
-    margin-bottom: 90vh;
+    margin-bottom: 80vh;
     padding: 1.5rem;
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(8px);
@@ -118,25 +119,9 @@
     transition: all 0.4s ease-out;
   }
 
-  .scrolly-step:first-child {
-    margin-bottom: 50vh;
-  }
-
-  .scrolly-step:last-child {
-    margin-bottom: 30vh;
-  }
-
   .scrolly-step.active {
     opacity: 1;
     transform: translateY(0);
-  }
-
-  .graphic-container {
-    position: sticky; /* change from relative to sticky */
-    top: 20vh;
-    height: 60vh;
-    margin-bottom: 2rem;
-    overflow: hidden;
   }
 
   .graphic-image {
@@ -147,29 +132,23 @@
     height: 100%;
     object-fit: contain;
     opacity: 0;
-    z-index: 0;
     transition: opacity 0.4s ease;
   }
 
   .graphic-image.active {
     opacity: 1;
-    z-index: 1;
   }
 
+  h3 {
+    margin-top: 0;
+    color: #222;
+    font-size: 1.3rem;
+  }
 
-  @media (max-width: 768px) {
-    .graphic-container {
-      position: sticky;
-      top: 10vh;
-      height: 40vh;
-      margin-bottom: 1rem;
-      width: 100%;
-    }
-
-    .scrolly-step {
-      margin: 0 auto 4rem auto;
-      width: 90%;
-    }
+  p {
+    margin-bottom: 0;
+    color: #444;
+    line-height: 1.5;
   }
 </style>
 

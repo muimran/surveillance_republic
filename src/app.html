@@ -1,60 +1,17 @@
+<!-- src/app.html (The CLEAN version) -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Leaflet Mobile Map Example</title>
 
+    <!-- Global CSS links are fine here -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
-    <style>
-      body {
-        padding: 0;
-        margin: 0;
-      }
-      #map {
-        width: 100vw;
-        /* height is set inline in Map.svelte */
-      }
-    </style>
-
-    <!-- Your author and SEO metadata -->
-    <meta name="author" content="Muhammad Imran" />
-    <meta name="description" content="Data journalism and visualisation project by Muhammad Imran, reporting by Yma Islam." />
-
-    <!-- JSON-LD structured data -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "CreativeWork",
-        "name": "Surveilance in Bangladesh",
-        "description": "An interactive visualisation built using SvelteKit. Web development and visualisation by Muhammad Imran. Reporting by Zyma Islam.",
-        "datePublished": "2025-08-02",
-        "author": [
-          {
-            "@type": "Person",
-            "name": "Muhammad Imran",
-            "jobTitle": "Data Journalist and Visualisation Specialist",
-            "url": "https://muhammadimran.com"
-          },
-          {
-            "@type": "Person",
-            "name": "Zyma Islam",
-            "jobTitle": "Investigative Journalist"
-          }
-        ],
-        "keywords": [
-          "Bangladesh",
-          "data journalism",
-          "visual storytelling",
-          "Muhammad Imran"
-        ]
-      }
-    </script>
-
+    <!-- This is the placeholder for your page-specific head content -->
     %sveltekit.head%
   </head>
-  <body>
+  <body style="padding: 0; margin: 0;">
     <div id="svelte">%sveltekit.body%</div>
   </body>
 </html>

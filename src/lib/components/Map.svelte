@@ -10,6 +10,8 @@
 
   let activePoint = null; 
   let tooltipPosition = 'top';
+  
+  let customHoverTooltip;
 
   let isMobile = false;
   if (typeof window !== 'undefined') {
@@ -17,50 +19,49 @@
   }
 
   let initialLat = isMobile ? 20 : 20;
-  let initialLng = isMobile ? 15 : 20;
-  let mapHeight = isMobile ? '400px' : '800px';
+  let initialLng = isMobile ? 7 : 4; 
+  let mapHeight = isMobile ? '300px' : '1000px';
   let initialZoom = isMobile ? 0.5 : 2.5;
   let minZoom = isMobile ? 0.5 : 2.5;
 
   function valueToPixelSize(value) {
-    const baseSize = isMobile ? 10 : 20;
-    const scalingFactor = isMobile ? 1000 : 550;
+    const baseSize = isMobile ? 5 : 15;
+    const scalingFactor = isMobile ? 3000 : 700;
     return baseSize + Math.sqrt(value) / scalingFactor;
   }
 
-  function formatExportValue(value) {
+  function formatCurrencyValue(value) {
     if (value === null || typeof value === 'undefined') {
       return '';
     }
+    const takaSymbol = '৳';
     if (value >= 10000000) { 
-      return `Tk ${(value / 10000000).toFixed(2)} cr`;
+      return `${takaSymbol} ${(value / 10000000).toFixed(2)} cr`;
     }
     if (value >= 100000) {
-      return `Tk ${(value / 100000).toFixed(2)} lakh`;
+      return `${takaSymbol} ${(value / 100000).toFixed(2)} lakh`;
     }
-    return `Tk ${new Intl.NumberFormat('en-IN').format(value)}`;
+    return `${takaSymbol} ${new Intl.NumberFormat('en-IN').format(value)}`;
   }
 
-  function createCircleIcon(point, size, withAnimation = false, currentZoom) {
+  function createCircleIcon(point, size, currentZoom) {
     if (!window.L) return;
     const markerColor = '#e63946';
-    const className = withAnimation ? 'fixed-marker with-animation leaflet-marker-icon' : 'fixed-marker leaflet-marker-icon';
+    const className = 'fixed-marker leaflet-marker-icon';
     
     let markerHtml = '';
 
     if (currentZoom >= 4 && point.label_text) {
       const fontSize = Math.min(12, Math.max(11, size / 4));
-      const displayText = point.label_text.replace('Tk', '').trim();
+      const displayText = point.label_text.replace('Tk', '').replace('৳', '').trim();
 
       if (fontSize <= 11) {
         const labelHtml = `<span style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 2px; color: #333; font-weight: bold; font-size: 11px; white-space: nowrap;">${displayText}</span>`;
         markerHtml = `<div style="width: ${size}px; height: ${size}px; background-color: ${markerColor}; border-radius: 50%; opacity: 0.6; position: relative;">${labelHtml}</div>`;
-      
       } else {
         const labelHtml = `<span style="color: white; font-weight: bold; font-size: ${fontSize.toFixed(1)}px; line-height: 1;">${displayText}</span>`;
         markerHtml = `<div style="width: ${size}px; height: ${size}px; background-color: ${markerColor}; border-radius: 50%; opacity: 0.6; display: flex; justify-content: center; align-items: center;">${labelHtml}</div>`;
       }
-
     } else {
       markerHtml = `<div style="width: ${size}px; height: ${size}px; background-color: ${markerColor}; border-radius: 50%; opacity: 0.6;"></div>`;
     }
@@ -77,9 +78,27 @@
 
   onMount(() => {
     if (typeof window === 'undefined') return;
+    
+    function triggerMarkerAnimations() {
+      if (!markersLayer) return;
+
+      markersLayer.eachLayer(layer => {
+        const icon = layer._icon;
+        if (icon) {
+          icon.classList.remove('with-animation');
+          void icon.offsetWidth;
+          icon.classList.add('with-animation');
+        }
+      });
+    }
 
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => { isMapVisible = entry.isIntersecting; });
+      entries.forEach(entry => { 
+        isMapVisible = entry.isIntersecting;
+        if (isMapVisible) {
+          setTimeout(triggerMarkerAnimations, 100);
+        }
+      });
     }, { threshold: 0.1 });
 
     import('leaflet').then(L => {
@@ -140,7 +159,7 @@
       const createMarker = (point) => {
         const size = valueToPixelSize(point.value);
         const currentZoom = map.getZoom();
-        const divIcon = createCircleIcon(point, size, true, currentZoom);
+        const divIcon = createCircleIcon(point, size, currentZoom);
         const marker = L.marker([point.lat, point.long], { icon: divIcon });
 
         marker.pointData = point;
@@ -155,31 +174,109 @@
         } else {
           let exporterHtml = '';
           if (point.exporter_companies && point.exporter_companies.length > 0) {
+            
             const exporterListItems = point.exporter_companies.map(exp => {
-                const formattedValue = formatExportValue(exp.export_value);
+                let companyStyle;
+                let dataAttribute = '';
+
+                if (exp.base_country && exp.base_country !== point.country) {
+                    companyStyle = 'color: #c00007;';
+                } else {
+                    companyStyle = 'color: #0056b3;';
+                }
+
+                if (exp.base_country) {
+                    dataAttribute = `data-tooltip-text="${exp.exporter_company} is based in ${exp.base_country}"`;
+                    companyStyle += ' cursor: help;';
+                }
+
+                const companyNameHtml = `<strong class="exporter-company" style="${companyStyle}" ${dataAttribute}>${exp.exporter_company}</strong>`;
+
+                const formattedValue = formatCurrencyValue(exp.export_value);
                 const valueHtml = formattedValue ? ` - <strong>${formattedValue}</strong>` : '';
-                return `<li>${exp.exporter_company}${valueHtml}</li>`;
+                
+                return `<li>${companyNameHtml}${valueHtml}</li>`;
             }).join('');
+
             exporterHtml = `<div class="tooltip-exporters"><strong>Exporter Companies:</strong><ul>${exporterListItems}</ul></div>`;
           }
+
           const importerLabel = point.importers.length > 1 ? 'Importer Agencies' : 'Importer Agency';
-          const importerListItems = point.importers.map(imp => `<li>${imp.importer_agency}</li>`).join('');
+          const importerListItems = point.importers.map(imp => {
+            const formattedValue = formatCurrencyValue(imp.import_value);
+            const valueHtml = formattedValue ? ` - <strong>${formattedValue}</strong>` : '';
+            return `<li>${imp.importer_agency}${valueHtml}</li>`;
+          }).join('');
           const importerHtml = `<div class="tooltip-importers"><strong>${importerLabel}:</strong><ul>${importerListItems}</ul></div>`;
           
-          const headerHtml = `<div class="tooltip-header"><strong>${point.country}</strong><div class="tooltip-amount">Amount: ${point.label_text}</div></div>`;
+          let barrierHtml = '';
+          if (point.export_barriers === 'Y') {
+            barrierHtml = `<div class="tooltip-barrier-notice">${point.country} bans exporting surveillance equipment to repressive regimes.</div>`;
+          }
           
-          marker.bindPopup(`<div class="tooltip-content">${headerHtml}${exporterHtml}${importerHtml}</div>`, {
-            className: 'custom-tooltip', maxWidth: 300
+          const headerHtml = `<div class="tooltip-header"><strong>${point.country}</strong><div class="tooltip-amount">Amount: ${point.label_text.replace('Tk', '৳')}</div></div>`;
+          
+          marker.bindPopup(`<div class="tooltip-content">${headerHtml}${exporterHtml}${importerHtml}${barrierHtml}</div>`, {
+            className: 'custom-tooltip', 
+            maxWidth: 300,
+            closeButton: false
+          });
+          
+          marker.on('mouseover', function (e) {
+            if (e.target._icon) {
+              e.target._icon.classList.add('marker-hover');
+            }
+            e.target.setZIndexOffset(1000);
+          });
+
+          marker.on('mouseout', function (e) {
+            if (e.target._icon) {
+              e.target._icon.classList.remove('marker-hover');
+            }
+            e.target.setZIndexOffset(0);
+          });
+
+          marker.on('popupopen', (e) => {
+            const popupContent = e.popup.getElement().querySelector('.leaflet-popup-content');
+            if (!popupContent) return;
+            
+            const companyElements = popupContent.querySelectorAll('.exporter-company');
+            companyElements.forEach(el => {
+              const tooltipText = el.dataset.tooltipText;
+              if (tooltipText) {
+                el.addEventListener('mousemove', (moveEvent) => {
+                  const tooltipWidth = customHoverTooltip.offsetWidth;
+                  const tooltipHeight = customHoverTooltip.offsetHeight;
+                  const viewportWidth = window.innerWidth;
+                  const viewportHeight = window.innerHeight;
+                  const offset = 15;
+
+                  let x = moveEvent.clientX + offset;
+                  let y = moveEvent.clientY + offset;
+
+                  if (x + tooltipWidth > viewportWidth - offset) {
+                    x = moveEvent.clientX - tooltipWidth - offset;
+                  }
+
+                  if (y + tooltipHeight > viewportHeight - offset) {
+                    y = moveEvent.clientY - tooltipHeight - offset;
+                  }
+                  
+                  customHoverTooltip.style.left = `${x}px`;
+                  customHoverTooltip.style.top = `${y}px`;
+                });
+
+                el.addEventListener('mouseover', () => {
+                  customHoverTooltip.innerHTML = tooltipText;
+                  customHoverTooltip.style.display = 'block';
+                });
+                el.addEventListener('mouseout', () => {
+                  customHoverTooltip.style.display = 'none';
+                });
+              }
+            });
           });
         }
-
-        setTimeout(() => {
-          const finalIcon = createCircleIcon(point, size, false, map.getZoom());
-          if(marker && marker._icon) {
-             marker.setIcon(finalIcon);
-          }
-        }, 1500);
-
         return marker;
       };
       
@@ -189,7 +286,7 @@
           if (layer instanceof L.Marker && layer.pointData) {
             const point = layer.pointData;
             const size = valueToPixelSize(point.value);
-            const newIcon = createCircleIcon(point, size, false, currentZoom);
+            const newIcon = createCircleIcon(point, size, currentZoom);
             layer.setIcon(newIcon);
           }
         });
@@ -219,6 +316,8 @@
 <div class="map-wrapper" style="height: {mapHeight};">
   <div bind:this={mapDiv} id="map" style="height: 100%; width: 100%;"></div>
 
+  <div bind:this={customHoverTooltip} id="custom-hover-tooltip"></div>
+
   {#if activePoint && isMobile}
     <div 
       class="mobile-tooltip"
@@ -228,18 +327,24 @@
       <div class="tooltip-content">
         <div class="tooltip-header">
             <strong>{activePoint.country}</strong>
-            <div class="tooltip-amount">Amount: {activePoint.label_text}</div>
+            <div class="tooltip-amount">Amount: {activePoint.label_text.replace('Tk', '৳')}</div>
         </div>
         
         {#if activePoint.exporter_companies && activePoint.exporter_companies.length > 0}
           <div class="tooltip-exporters">
             <strong>Exporter Companies:</strong>
             <ul>
-              <!-- ### FIX IS HERE ### -->
               {#each activePoint.exporter_companies as exporter}
-                {@const formattedValue = formatExportValue(exporter.export_value)}
+                {@const formattedValue = formatCurrencyValue(exporter.export_value)}
                 <li>
-                  {exporter.exporter_company}
+                  {#if exporter.base_country && exporter.base_country !== activePoint.country}
+                    <strong style="color: #c00007;">{exporter.exporter_company}</strong>
+                  {:else}
+                    <strong style="color: #0056b3;">{exporter.exporter_company}</strong>
+                  {/if}
+                  {#if exporter.base_country}
+                    <span style="font-size: 10px; color: #555; font-style: italic;"> (based in {exporter.base_country})</span>
+                  {/if}
                   {#if formattedValue}
                     - <strong>{formattedValue}</strong>
                   {/if}
@@ -253,26 +358,60 @@
           <strong>{activePoint.importers.length > 1 ? 'Importer Agencies' : 'Importer Agency'}:</strong>
           <ul>
             {#each activePoint.importers as importer}
-              <li>{importer.importer_agency}</li>
+              {@const formattedValue = formatCurrencyValue(importer.import_value)}
+              <li>
+                {importer.importer_agency}
+                {#if formattedValue}
+                  - <strong>{formattedValue}</strong>
+                {/if}
+              </li>
             {/each}
           </ul>
         </div>
+
+        {#if activePoint.export_barriers === 'Y'}
+          <div class="tooltip-barrier-notice">
+            {activePoint.country} prohibits export of surveillance equipment to repressive regimes.
+          </div>
+        {/if}
       </div>
     </div>
   {/if}
 </div>
 
 <style>
-  /* All styles remain the same */
+  #custom-hover-tooltip {
+    position: fixed;
+    display: none;
+    background-color: black;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: .85em;
+    z-index: 10001;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+  }
   .map-wrapper {
     position: relative;
     width: 100vw;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
   }
   #map { 
     touch-action: pan-x pan-y; 
   }
-
-  /* --- Styles for Mobile Tooltip (Svelte Component) --- */
+  :global(.leaflet-marker-icon.with-animation > div) {
+    animation: grow-shrink 1.5s ease forwards;
+  }
+  @keyframes grow-shrink {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); opacity: 0.6; }
+    100% { transform: scale(1); opacity: 0.6; }
+  }
   .mobile-tooltip {
     position: absolute;
     left: 50%;
@@ -301,17 +440,14 @@
     margin: -12px -15px 8px -15px;
     padding: 12px 15px 0 15px;
   }
-
   .mobile-tooltip .tooltip-header > strong {
     font-size: 18px;
   }
-
   .mobile-tooltip .tooltip-amount {
     padding-top: 5px;
     padding-bottom: 8px;
     border-bottom: 1.5px solid #444;
   }
-
   .mobile-tooltip .tooltip-importers,
   .mobile-tooltip .tooltip-exporters {
     word-wrap: break-word;
@@ -336,9 +472,9 @@
   .mobile-tooltip .tooltip-exporters li {
     line-height: 1.3;
     padding-bottom: 2px;
+    font-size: 12px;
   }
 
-  /* --- Styles for Desktop Tooltip (Global, for Leaflet) --- */
   :global(.custom-tooltip .leaflet-popup-content-wrapper) {
     background-color: #ffffff !important;
     color: black !important;
@@ -354,7 +490,6 @@
   :global(.custom-tooltip .leaflet-popup-tip) {
     background-color: #ffffff !important;
   }
-
   :global(.custom-tooltip .tooltip-header) {
     background: black;
     color: white;
@@ -363,17 +498,14 @@
     margin: -10px -10px 8px -10px;
     padding: 10px 10px 0 10px;
   }
-
   :global(.custom-tooltip .tooltip-header > strong) {
     font-size: 18px;
   }
-
   :global(.custom-tooltip .tooltip-amount) {
     padding-top: 5px;
     padding-bottom: 8px;
     border-bottom: 1.5px solid #444;
   }
-
   :global(.custom-tooltip .tooltip-importers),
   :global(.custom-tooltip .tooltip-exporters) {
     word-wrap: break-word;
@@ -398,21 +530,34 @@
   :global(.custom-tooltip .tooltip-exporters li) {
     line-height: 1.3;
     padding-bottom: 2px;
+    font-size: 12px;
+  }
+  
+  .mobile-tooltip .tooltip-barrier-notice,
+  :global(.custom-tooltip .tooltip-barrier-notice) {
+    color: #c00007;
+    font-size: 12px;
+    font-style: italic;
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+    line-height: 1.4;
   }
 
-  /* --- Other Global and Shared Styles --- */
   :global(.leaflet-marker-icon.fixed-marker) {
     display: flex;
     justify-content: center;
     align-items: center;
   }
-  :global(.fixed-marker.with-animation > div) {
-    animation: grow-shrink 1.5s ease forwards;
+
+  :global(.leaflet-marker-icon.fixed-marker > div) {
+    transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
   }
-  @keyframes grow-shrink {
-    0% { transform: scale(0); opacity: 0; }
-    50% { transform: scale(1.2); opacity: 0.6; }
-    100% { transform: scale(1); opacity: 0.6; }
+
+  :global(.leaflet-marker-icon.marker-hover > div) {
+    box-shadow: 0 0 15px 5px rgba(230, 57, 70, 0.7);
+    transform: scale(1.1);
+    z-index: 1000;
   }
 
   @media (max-width: 600px) {
@@ -421,5 +566,74 @@
       max-height: 300px;
       overflow-y: auto;
     }
+    
+    .mobile-tooltip,
+    :global(.custom-tooltip .leaflet-popup-content-wrapper) {
+      font-size: 12px;
+    }
+
+    .mobile-tooltip .tooltip-header > strong,
+    :global(.custom-tooltip .tooltip-header > strong) {
+      font-size: 16px;
+    }
+
+    .mobile-tooltip .tooltip-importers strong,
+    .mobile-tooltip .tooltip-exporters strong,
+    :global(.custom-tooltip .tooltip-importers strong),
+    :global(.custom-tooltip .tooltip-exporters strong) {
+        font-size: 13px;
+    }
+    .mobile-tooltip .tooltip-importers li,
+    .mobile-tooltip .tooltip-exporters li,
+    :global(.custom-tooltip .tooltip-importers li),
+    :global(.custom-tooltip .tooltip-exporters li) {
+      font-size: 11px;
+    }
+    .mobile-tooltip .tooltip-importers li strong,
+    .mobile-tooltip .tooltip-exporters li strong,
+    :global(.custom-tooltip .tooltip-importers li strong),
+    :global(.custom-tooltip .tooltip-exporters li strong) {
+      font-size: 10px;
+    }
+  }
+
+  /* --- Google Maps Style for Leaflet Zoom Controls --- */
+  :global(.leaflet-bar) {
+    border: none !important;
+    background: #ffffff !important;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.4) !important;
+    border-radius: 8px !important;
+  }
+
+  :global(.leaflet-control-zoom a) {
+    width: 30px !important;
+    height: 30px !important;
+    line-height: 30px !important;
+    background: transparent !important;
+    color: #333333 !important;
+    font-size: 22px !important;
+    font-weight: normal !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transition: background-color 0.16s ease-out;
+  }
+
+  :global(.leaflet-control-zoom-in) {
+    border-top-left-radius: 8px !important;
+    border-top-right-radius: 8px !important;
+    border-bottom: 1px solid #cccccc !important;
+  }
+
+  :global(.leaflet-control-zoom-out) {
+    margin-top: 0 !important;
+    border-bottom-left-radius: 8px !important;
+    border-bottom-right-radius: 8px !important;
+  }
+
+  :global(.leaflet-control-zoom a:hover) {
+    background-color: #f4f4f4 !important;
+    transform: none;
   }
 </style>
