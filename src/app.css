@@ -1,0 +1,23 @@
+/* src/app.css */
+
+/* 1. Import the "Chai" font from Google Fonts (must be at the top) */
+@import url('https://fonts.googleapis.com/css2?family=Chai&display=swap');
+
+
+/* 2. Define global styles for the root elements (moved from layout.svelte) */
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* 3. Define styles for the body, including your NEW font */
+body {
+  /* 👇 THIS IS THE MOST IMPORTANT PART 👇 */
+  font-family: 'Chai', cursive; 
+
+  /* These styles were also moved from layout.svelte */
+  background: #ffffff;
+}
