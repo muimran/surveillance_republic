@@ -9,7 +9,7 @@ const config = {
       fallback: null
     }),
     paths: {
-      base: '/suv'  // subfolder
+      base: ''  // subfolder
     }
   }
 };
