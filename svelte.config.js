@@ -1,15 +1,8 @@
-import { vitePreprocess } from '@sveltejs/kit/vite';
-
-const isExport = process.env.EXPORT === 'true';
-
-const adapter = isExport
-  ? require('@sveltejs/adapter-static').default
-  : require('@sveltejs/adapter-vercel').default;
+// uncomment if you want to use the static adapter for exporting 
+import adapter from '@sveltejs/adapter-static';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-  preprocess: vitePreprocess(),
-
   kit: {
     adapter: adapter({
       pages: 'build',
@@ -17,40 +10,9 @@ const config = {
       fallback: null
     }),
     paths: {
-      base: isExport ? '/my-subfolder-name' : ''
-    },
-    trailingSlash: 'always'
-  }
-};
-
-export default config;
-
-
-
-
-
-
-
-
-
-
-
-/* uncomment if you want to use the static adapter for exporting 
-import adapter from '@sveltejs/adapter-static';
-
-/** @type {import('@sveltejs/kit').Config} * /
-const config = {
-  kit: {
-    adapter: adapter({
-      pages: 'build',
-      assets: 'build',
-      fallback: null
-    }),
-    paths: {
-      base: 'suv'  // subfolder
+      base: '/suv'  // subfolder, added leading slash
     }
   }
 };
 
 export default config;
-*/
