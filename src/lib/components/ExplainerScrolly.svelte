@@ -125,26 +125,22 @@
 <div class="scrolly-container">
   <div class="graphic-container">
     {#if activeIndex !== null}
-    {#key (activeIndex === 0 || activeIndex === 1) ? 'animated-eye-group' : activeIndex}
-    <div class="graphic-wrapper" in:fade={{ duration: 400 }}>
-          
-          {#if steps[activeIndex].animated}
-            <!-- --- 2. FIXED COMPONENT USAGE --- -->
-            <!-- Using the <StepAnimations> tag with the correct name -->
+      <div class="graphic-wrapper" in:fade={{ duration: 400 }}>
+        {#if steps[activeIndex].animated}
+          {#key 'animated-eye-group'}
             <StepAnimations 
               gifFile={steps[activeIndex].gifFile} 
               svgFile={steps[activeIndex].svgFile} 
             />
-          {:else}
-            <img
-              src={steps[activeIndex].image}
-              alt={steps[activeIndex].title}
-              class="graphic-image-static"
-            />
-          {/if}
-
-        </div>
-      {/key}
+          {/key}
+        {:else}
+          <img
+            src={steps[activeIndex].image}
+            alt={steps[activeIndex].title}
+            class="graphic-image-static"
+          />
+        {/if}
+      </div>
     {/if}
   </div>
 
