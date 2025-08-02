@@ -226,12 +226,12 @@
     "value": 969195.90,
     "label_text": "Tk 9.7 lakh",
     "export_barriers": "N",
-    "linked_countries": ["United States"],
+    "linked_countries": ["United States of America"],
     "exporter_companies": [
       {
         "exporter_company": "Yaana Technologies",
         "export_value": 969195.90,
-        "base_country": "United States"
+        "base_country": "United States of America"
       }
     ],
     "importers": [
@@ -259,7 +259,7 @@
       {
         "exporter_company": "Teledyne FLIR Detection, Inc. (USA)",
         "export_value": 116479500.86,
-        "base_country": "United States"
+        "base_country": "United States of America"
       }
     ],
     "importers": [
@@ -311,12 +311,12 @@
     "value": 4575515.74,
     "label_text": "Tk 45.8 lakh",
     "export_barriers": "N",
-    "linked_countries": ["United States"],
+    "linked_countries": ["United States of America"],
     "exporter_companies": [
       {
         "exporter_company": "Yaana Technologies",
         "export_value": 4575515.74,
-        "base_country": "United States"
+        "base_country": "United States of America"
       }
     ],
     "importers": [
