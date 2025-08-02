@@ -1,25 +1,21 @@
-// Correct import for the preprocessor
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
-// Your existing static adapter import
-import adapter from '@sveltejs/adapter-static';
+// Import the new adapter
+import adapter from '@sveltejs/adapter-auto';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-  // Add the preprocess section here
-  preprocess: vitePreprocess(),
+	preprocess: vitePreprocess(),
 
-  kit: {
-    adapter: adapter({
-      pages: 'build',
-      assets: 'build',
-      fallback: null
-    }),
-    paths: {
-      // Your existing base path
-      base: '/suv'
-    }
-  }
+	kit: {
+		// Use the new adapter. It will automatically handle everything for Vercel.
+		adapter: adapter(),
+
+		// KEEP YOUR BASE PATH! This is still needed.
+		paths: {
+			base: '/suv'
+		}
+	}
 };
 
 export default config;
