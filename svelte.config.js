@@ -1,14 +1,12 @@
-
-
 import { vitePreprocess } from '@sveltejs/kit/vite';
 
 const isExport = process.env.EXPORT === 'true';
 
-// Dynamically import the correct adapter
 const adapter = isExport
-  ? (await import('@sveltejs/adapter-static')).default
-  : (await import('@sveltejs/adapter-vercel')).default;
+  ? require('@sveltejs/adapter-static').default
+  : require('@sveltejs/adapter-vercel').default;
 
+/** @type {import('@sveltejs/kit').Config} */
 const config = {
   preprocess: vitePreprocess(),
 
