@@ -15,6 +15,7 @@
   const pubDate = new Date('2025-08-01').toISOString();
 </script>
 
+
 <svelte:head>
   <!-- Primary Meta Tags -->
   <title>Surveillance Republic | The Daily Star</title>
@@ -168,7 +169,6 @@
   </article>
 
 
- 
 
   <article class="ds-body">
     <h2>How the surveillance works</h2>

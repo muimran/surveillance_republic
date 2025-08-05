@@ -19,9 +19,12 @@
           <span class="line-2">REPUBLIC</span>
         </h1>
 
+        <!-- START: EDITED SECTION -->
         <div class="byline">
-          <p><strong>Zyma Islam, Mohammad Suman and Mahmudul Hasan</strong></p>
+          <!-- Removed <strong> tag for better semantic markup and direct CSS control -->
+          <p>Zyma Islam, Mohammad Suman and Mahmudul Hasan</p>
         </div>
+        <!-- END: EDITED SECTION -->
 
       </div>
     </div>
@@ -119,13 +122,17 @@
   letter-spacing: -0.01em; /* Reduced to prevent tilt */
 }
 
+
+/* --- START: EDITED STYLES --- */
 .byline {
-  margin-top: 184px;
+  /* PLACEMENT: Drastically reduced margin to visually connect the byline to the headline */
+  margin-top: 2.5rem; /* Was 184px */
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* FONT: Matched headline font-family for consistency, with a lighter weight and softer color */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 1rem;
-  font-weight: 400;
-  color: #666;
+  font-weight: 400; /* Regular weight is ideal for a subordinate byline */
+  color: #555; /* A soft, dark gray for readability without competing with the title */
   line-height: 1.6;
 }
 
@@ -133,10 +140,9 @@
   margin: 0;
 }
 
-.byline strong {
-  font-weight: 600;
-  color: #333;
-}
+/* The .byline strong rule is no longer needed */
+/* --- END: EDITED STYLES --- */
+
 
 /* --- MOBILE STYLES --- */
 @media (max-width: 768px) {
@@ -177,7 +183,8 @@
   }
 
   .byline {
-    margin-top: 40px;
+    /* Adjusted for consistency with desktop rem value */
+    margin-top: 2.5rem; /* Was 40px */
   }
 }
 </style>

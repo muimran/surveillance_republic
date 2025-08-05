@@ -502,6 +502,12 @@
   
   .mobile-tooltip .tooltip-importers,
   .mobile-tooltip .tooltip-exporters { word-wrap: break-word; }
+
+  /* --- ADD THIS NEW RULE --- */
+  .mobile-tooltip .tooltip-exporters {
+    margin-top: 16px; /* Adjust this value as needed */
+  }
+  /* ----------------------- */
   
   .mobile-tooltip .tooltip-importers > strong,
   .mobile-tooltip .tooltip-exporters > strong {
