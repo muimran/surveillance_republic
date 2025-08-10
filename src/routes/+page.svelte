@@ -82,7 +82,9 @@
 
   @media (max-width: 700px) {
     .ds-body {
-      padding: 0 5vw;
+      /* FIXED: Reduced side padding for mobile */
+      padding: 0 1rem; 
+      font-size: 1.05rem;
     }
   }
 
@@ -101,6 +103,49 @@
   .skip-to-content:focus {
     left: 50%;
     transform: translateX(-50%);
+  }
+
+  /* ============================================= */
+  /* == SPECIAL TREATMENT FOR Q&A SECTION == */
+  /* ============================================= */
+  .qa-section {
+    background-color: #f8f9fa;
+    border-left: 4px solid #b30000;
+    padding: 1.5rem 2rem;
+    margin: 2.5rem auto;
+    border-radius: 3px;
+  }
+
+  /* Adjustments for elements inside the styled box */
+  .qa-section h2 {
+    margin-top: 0;
+    font-size: 1.4rem;
+  }
+
+  /* Override default paragraph margins for better control inside the Q&A box */
+  .qa-section p {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  /* Differentiate the question text */
+  .qa-question {
+    font-weight: 700;
+    color: #343a40;
+    margin-bottom: 0.5rem; /* Space between question and answer */
+  }
+
+  /* Style the answer text */
+  .qa-answer {
+    color: #212529;
+    /* FIXED: This value adds more vertical space between each Q&A pair */
+    margin-bottom: 2.5rem;
+  }
+
+  /* Remove extra margin from the last paragraph in the section */
+  .qa-section p:last-of-type {
+    margin-bottom: 0;
   }
 </style>
 
@@ -211,27 +256,25 @@
     <p>She called it a "security-first framework" and said that it "spans not just telecom and cyber laws, but also narcotics, anti-terrorism, trade regulations, and import controls—creating a system ripe for abuse."&nbsp;</p>
   </article>
 
-
-
-
-  <article class="ds-body">
+  <!-- ============================================= -->
+  <!-- == Q&A SECTION WITH SPECIAL TREATMENT == -->
+  <!-- ============================================= -->
+  <article class="ds-body qa-section">
     <h2>NTMC's reply to our questions</h2>
-  <p>TDS: What steps have been taken to take out the ILIS from operation?</p>
   
-  <p>NTMC: Lawful Telecommunication Interception Systems are technical platforms essential for law enforcement agencies, investigation agencies and intelligence agencies to collect necessary information to investigate cases and identify the accused. Countries around the world have such practice. NTMC established and maintains a few basic LI platforms to support mentioned agencies.</p>
-  <p>TDS: NTMC had installed Deep Packet Inspection (DPI) devices for monitoring and filtering subscriber internet usage. Are these still operational in Data Centres 3 and 4?</p>
+    <p class="qa-question"><strong>TDS:</strong> What steps have been taken to take out the ILIS from operation?</p>
+    <p class="qa-answer"><strong>NTMC:</strong> Lawful Telecommunication Interception Systems are technical platforms essential for law enforcement agencies, investigation agencies and intelligence agencies to collect necessary information to investigate cases and identify the accused. Countries around the world have such practice. NTMC established and maintains a few basic LI platforms to support mentioned agencies.</p>
   
-  <p>NTMC: DPI devices are not in operation now. Their functionality is being tested. However, a few online betting sites prohibited by the government have been blocked as test purposes. The future usage of this system will depend on proper guidelines/policy.</p>  
-  <p>TDS: In 2022, NTMC purchased a system from Intersec (France) that allowed NTMC to get instant, precise instant and historical location of individuals. Is the system installed by Intersec still active?</p>
+    <p class="qa-question"><strong>TDS:</strong> NTMC had installed Deep Packet Inspection (DPI) devices for monitoring and filtering subscriber internet usage. Are these still operational in Data Centres 3 and 4?</p>
+    <p class="qa-answer"><strong>NTMC:</strong> DPI devices are not in operation now. Their functionality is being tested. However, a few online betting sites prohibited by the government have been blocked as test purposes. The future usage of this system will depend on proper guidelines/policy.</p>  
   
-  <p>NTMC: Yes, the system is active now. Law enforcement agencies, investigation agencies and intelligence agencies utilise the service to locate the accused and victims. More importantly, 999 and Fire Services use this system to instantly locate the victims.</p> 
-  <p>TDS: Does NTMC still pull customer data (Registration information, CDR, SMS content, NID, roaming status, recharge details, package details etc) using an API plugin provided by telecom operators? If yes, then do you obtain a warrant from a magistrate beforehand?</p>
+    <p class="qa-question"><strong>TDS:</strong> In 2022, NTMC purchased a system from Intersec (France) that allowed NTMC to get instant, precise instant and historical location of individuals. Is the system installed by Intersec still active?</p>
+    <p class="qa-answer"><strong>NTMC:</strong> Yes, the system is active now. Law enforcement agencies, investigation agencies and intelligence agencies utilise the service to locate the accused and victims. More importantly, 999 and Fire Services use this system to instantly locate the victims.</p> 
   
-  <p>NTMC: As said before, law enforcement agencies, investigation agencies and intelligence agencies utilise the platform to investigate cases and identify the accused. Mentioned agencies complete necessary processes at their end before collecting information.<strong>&gt;&gt;</strong></p>
-</article>
+    <p class="qa-question"><strong>TDS:</strong> Does NTMC still pull customer data (Registration information, CDR, SMS content, NID, roaming status, recharge details, package details etc) using an API plugin provided by telecom operators? If yes, then do you obtain a warrant from a magistrate beforehand?</p>
+    <p class="qa-answer"><strong>NTMC:</strong> As said before, law enforcement agencies, investigation agencies and intelligence agencies utilise the platform to investigate cases and identify the accused. Mentioned agencies complete necessary processes at their end before collecting information.</p>
+  </article>
   
-
-
   <article class="ds-body">
     <h2>How the surveillance works</h2>
     <p>The Daily Star shared the list of components purchased by the NTMC with our in-house network specialists. Using information about the components, they <strong>r</strong>econstructed the ILIS network (see the operational and network structure online) as outlined by its contract.&nbsp;</p>
@@ -259,13 +302,12 @@
     <p>"Bangladesh's surveillance regime is rooted in colonial-era laws that permit spyware use, communication interception, and broad law enforcement access without adequate safeguards," she said.</p>
     
     <p>She called it a "security-first framework" and said that it "spans not just telecom and cyber laws, but also narcotics, anti-terrorism, trade regulations, and import controls—creating a system ripe for abuse."&nbsp;</p>
-</article>
+  </article>
 
   <!-- Map component -->
   <section aria-label="Surveillance locations map">
     <Map points={data.points} />
   </section>
-
 
   <!-- Final text section -->
   <article class="ds-body">
@@ -300,8 +342,6 @@
     
     <p>The next year, it purchased an even powerful network-jammer – a drone that could sweep across an area blocking communications.&nbsp;&nbsp;</p>
   </article>
-
-
 
   <article class="ds-body">
     <h2>Circumventing export bans</h2>
@@ -351,8 +391,5 @@
 
 <p>The Daily Star also emailed Yaana, Teledyne, Octasic, Vehere and Roya International, the company which had supplied goods from the Swiss surveillance company ATECS AG but did not receive any response. We also sent written questions to Rab and police, but they did not respond.&nbsp;</p>
   </article>
-
-
-
 
 </main>
