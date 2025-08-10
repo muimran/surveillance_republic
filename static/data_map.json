@@ -26,7 +26,7 @@
     "lat": 50.503887,
     "long": 4.469936,
     "value": 10596600.82,
-    "label_text": "Tk 1.05 cr",
+    "label_text": "Tk 1.06 cr",
     "export_barriers": "Y",
     "linked_countries": ["United States of America"],
     "exporter_companies": [
@@ -103,7 +103,7 @@
       {
         "exporter_company": "Yaana Technologies",
         "export_value": 305013942.14,
-        "base_country": ""
+        "base_country": "United States of America"
       },
       {
         "exporter_company": "Panmark Impex Pte Ltd",
@@ -541,7 +541,7 @@
       },
       {
         "importer_agency": "NTMC",
-        "import_value": 110259974
+        "import_value": 443345947.07
       }
     ]
   },

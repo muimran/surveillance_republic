@@ -18,7 +18,7 @@
     },
     {
       id: 2, animated: true, gifFile: 'eye.gif', svgFile: 'step2.svg',
-      title: 'Tapping National Gateways', text: 'To do this, the system collects all internet communication from the national gateway and national internet exchange levels. Copper Tap Modules splits incoming and outgoing data streams and sends them to separate monitoring ports. Meanwhile, a Fibre Tap mirrors high-speed fibre optic traffic and redirects it for analysis. These feeds are then processed by DeepProbe units, which prepare the data for inspection.The SSL decryption platform intercepts secure connections, decrypts the traffic using managed certificates, and forwards the plaintext data for inspection by security tools.'
+      title: 'Tapping National Gateways', text: 'To do this, the system collects all internet communication from the national gateway and national internet exchange levels. Copper Tap Modules splits incoming and outgoing data streams and sends them to separate monitoring ports. Meanwhile, a Fibre Tap mirrors high-speed fibre optic traffic and redirects it for analysis. These feeds are then processed by DeepProbe units, which prepare the data for inspection. The SSL decryption platform intercepts secure connections, decrypts the traffic using managed certificates, and forwards the plaintext data for inspection by security tools.'
     },
     {
       id: 3, animated: false, image: `${base}/images/step3.png`,
@@ -35,16 +35,18 @@
 
   function handleStepEnter(response) {
     const i = response.index - externalSteps;
-    if (i >= 0 && i < steps.length) {
-      activeIndex = i;
-    } else {
-      activeIndex = null;
-    }
+    // Clamp index to valid range to prevent images from vanishing
+    activeIndex = Math.max(0, Math.min(steps.length - 1, i));
   }
 
   function handleStepExit(response) {
-    if (response.index === externalSteps + steps.length - 1 && response.direction === 'down') {
-      // activeIndex = null;
+    const i = response.index - externalSteps;
+    if (response.direction === 'up' && i > 0 && i <= steps.length) {
+      // When scrolling up, set activeIndex to the previous step
+      activeIndex = Math.max(0, i - 1);
+    } else if (response.direction === 'down' && i >= steps.length - 1) {
+      // When scrolling down past the last step, keep the last step active
+      activeIndex = steps.length - 1;
     }
   }
 
@@ -53,7 +55,7 @@
     scroller
       .setup({
         step: '.scrolly-step',
-        offset: 1,
+        offset: 0.5, // Adjusted for smoother transitions
         debug: false
       })
       .onStepEnter(handleStepEnter)
@@ -62,33 +64,32 @@
     const handleResize = () => scroller.resize();
     window.addEventListener('resize', handleResize);
 
-    onDestroy(() => {
+    return () => {
       window.removeEventListener('resize', handleResize);
       scroller.destroy();
-    });
+    };
   });
 </script>
 
 <style>
   .scrolly-container {
-    max-width: 700px; /* This remains the outer boundary */
+    max-width: 700px;
     margin: 4rem auto;
     margin-top: 1rem;
     margin-bottom: 0rem;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     position: relative;
   }
+  
   .graphic-container {
     position: sticky;
     top: 0vh;
     height: 65vh;
     width: 90%;
     max-width: 600px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     margin: 0 auto 2rem;
   }
+
   .scrolly-steps {
     position: relative;
     z-index: 10;
@@ -96,23 +97,16 @@
   }
   
   .scrolly-step {
-    /* --- CORE FUNCTIONALITY --- */
-    margin-bottom: 80vh; /* This large margin drives the scrollytelling */
-    
-    /* --- READABILITY & LAYOUT (IMPROVED) --- */
-    max-width: 550px; /* Limits the width of the box for better line length */
-    margin-left: auto;   /* Centers the box within the scrolly-container */
+    margin-bottom: 80vh;
+    max-width: 550px;
+    margin-left: auto;
     margin-right: auto;
-    padding: 1.5rem 2rem; /* Added slightly more horizontal padding */
-    
-    /* --- VISUAL POLISH (IMPROVED) --- */
-    background: rgba(255, 255, 255, 0.95); /* Slightly more opaque background */
+    padding: 1.5rem 2rem;
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08); /* Softer, more modern shadow */
-    border-radius: 12px; /* A slightly more pronounced radius */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
     border: 1px solid rgba(0, 0, 0, 0.05);
-    
-    /* --- TRANSITION --- */
     opacity: 0.3;
     transform: translateY(15px);
     transition: all 0.4s ease-out;
@@ -123,27 +117,32 @@
     transform: translateY(0);
   }
 
-  /* --- TYPOGRAPHY (IMPROVED) --- */
   h3 {
     margin-top: 0;
-    margin-bottom: 0.75rem; /* Added space between title and paragraph */
-    color: #1a1a1a; /* A darker, richer black */
+    margin-bottom: 0.75rem;
+    color: #1a1a1a;
     font-size: 1.4rem;
-    font-weight: 600; /* Bolder for stronger hierarchy */
+    font-weight: 600;
   }
   
   p {
     margin-bottom: 0;
     color: #444;
-    line-height: 1.65; /* Increased for better readability in paragraphs */
+    line-height: 1.65;
     font-size: 1rem;
   }
 
-  /* --- Graphic specific styles --- */
   .graphic-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
+  
   .graphic-image-static {
     width: 100%;
     height: 100%;
@@ -159,46 +158,38 @@
     background-color: transparent !important;
   }
 
-  /* START: --- MOBILE-SPECIFIC STYLES --- */
   @media (max-width: 768px) {
-    /* Reduce the font size for the title */
     h3 {
-      font-size: 1.15rem; /* Smaller than the desktop 1.4rem */
+      font-size: 1.15rem;
     }
-
-    /* Reduce the font size for the paragraph text */
     p {
-      font-size: 0.9rem;  /* Smaller than the desktop 1rem */
+      font-size: 0.9rem;
     }
-
-    /* Optional: Reduce padding on mobile to give text more space */
     .scrolly-step {
       padding: 1.25rem 1.5rem;
     }
   }
-  /* END: --- MOBILE-SPECIFIC STYLES --- */
-
 </style>
 
 <div class="scrolly-container">
   <div class="graphic-container">
     {#if activeIndex !== null}
-      <div class="graphic-wrapper" in:fade={{ duration: 400 }}>
-        {#if steps[activeIndex].animated}
-          {#key 'animated-eye-group'}
+      {#key activeIndex}
+        <div class="graphic-wrapper" in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}>
+          {#if steps[activeIndex].animated}
             <StepAnimations 
               gifFile={steps[activeIndex].gifFile} 
               svgFile={steps[activeIndex].svgFile} 
             />
-          {/key}
-        {:else}
-          <img
-            src={steps[activeIndex].image}
-            alt={steps[activeIndex].title}
-            class="graphic-image-static"
-          />
-        {/if}
-      </div>
+          {:else}
+            <img
+              src={steps[activeIndex].image}
+              alt={steps[activeIndex].title}
+              class="graphic-image-static"
+            />
+          {/if}
+        </div>
+      {/key}
     {/if}
   </div>
 
