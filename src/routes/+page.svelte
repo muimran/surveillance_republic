@@ -49,7 +49,7 @@
   
   <!-- Open Graph / Facebook -->
   <meta property="og:title" content="Surveillance Republic | The Daily Star" />
-  <meta property="og:description" content="A data-rich visual investigation into surveillance in Bangladesh, by Muhammad Imran." />
+  <meta property="og:description" content="A data-rich visual investigation into surveillance in Bangladesh" />
   <meta property="og:image" content={socialImageURL} />
   <meta property="og:url" content={canonicalURL} />
   <meta property="og:type" content="article" />
@@ -123,14 +123,14 @@
   }
 
   @media (max-width: 700px) {
-    .ds-body {
-      /* FIXED: Reduced side padding for mobile */
-      padding: 0 12px;
+    :global(.ds-body) {
+      /* This rule will now apply correctly on mobile */
+      padding: 0 12px; /* <-- REDUCED PADDING */
       font-size: 1.05rem;
     }
   }
 
-  .ds-body p {
+  :global(.ds-body p) {
     margin: 1.2em 0;
   }
 
