@@ -1,0 +1,584 @@
+[
+  {
+    "country": "Bulgaria",
+    "lat": 42.7339,
+    "long": 25.4858,
+    "value": 30045005.81,
+    "label_text": "Tk 3 cr",
+    "export_barriers": "Y",
+    "linked_countries": [],
+    "exporter_companies": [
+      {
+        "exporter_company": "Samel 90",
+        "export_value": 30045005.81,
+        "base_country": "Bulgaria"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "RAB",
+        "import_value": 30045005.81
+      }
+    ]
+  },
+  {
+    "country": "Belgium",
+    "lat": 50.503887,
+    "long": 4.469936,
+    "value": 10596600.82,
+    "label_text": "Tk 1.06 cr",
+    "export_barriers": "Y",
+    "linked_countries": ["United States of America"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Yaana Technologies",
+        "export_value": 10596600.82,
+        "base_country": "United States of America"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "NTMC",
+        "import_value": 10596600.82
+      }
+    ]
+  },
+  {
+    "country": "Canada",
+    "lat": 56.1304,
+    "long": -106.3468,
+    "value": 884559696.98,
+    "label_text": "Tk 88.5 cr",
+    "export_barriers": "Y",
+    "linked_countries": ["Singapore"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Panmark Impex Pte Ltd",
+        "export_value": 884559696.98,
+        "base_country": "Singapore"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "Bangladesh Police",
+        "import_value": 661783350.04
+      },
+      {
+        "importer_agency": "RAB",
+        "import_value": 222776346.94
+      }
+    ]
+  },
+  {
+    "country": "China",
+    "lat": 35.8617,
+    "long": 104.1954,
+    "value": 73758473.57,
+    "label_text": "Tk 7.4 cr",
+    "export_barriers": "N",
+    "linked_countries": ["United States of America"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Yaana Technologies",
+        "export_value": 783409,
+        "base_country": "United States of America"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "NTMC",
+        "import_value": 73758473.57
+      }
+    ]
+  },
+  {
+    "country": "Cyprus",
+    "lat": 35.1264,
+    "long": 33.4299,
+    "value": 2786664340,
+    "label_text": "Tk 279 cr",
+    "export_barriers": "Y",
+    "linked_countries": ["Singapore", "Israel", "Switzerland", "United States of America"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Yaana Technologies",
+        "export_value": 305013942.14,
+        "base_country": "United States of America"
+      },
+      {
+        "exporter_company": "Panmark Impex Pte Ltd",
+        "export_value": 1921172027.92,
+        "base_country": "Singapore"
+      },
+      {
+        "exporter_company": "Tiersec",
+        "export_value": 87116603.53,
+        "base_country": "Cyprus"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "NTMC",
+        "import_value": 687832140.21
+      },
+      {
+          "importer_agency": "Bangladesh Police",
+          "import_value": 1380467438
+      },
+      {
+          "importer_agency": "RAB",
+          "import_value": 718364761.7
+      }
+    ]
+  },
+  {
+    "country": "Czech Republic",
+    "lat": 49.8175,
+    "long": 15.473,
+    "value": 182348956.26,
+    "label_text": "Tk 18.2 cr",
+    "export_barriers": "Y",
+    "linked_countries": ["Singapore"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Panmark Impex Pte Ltd",
+        "export_value": 182348956.26,
+        "base_country": "Singapore"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "Bangladesh Police",
+        "import_value": 182348956.26
+      }
+    ]
+  },
+  {
+    "country": "Denmark",
+    "lat": 56.2639,
+    "long": 9.5018,
+    "value": 623162313.27,
+    "label_text": "Tk 62.3 cr",
+    "export_barriers": "Y",
+    "linked_countries": ["United States of America"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Yaana Technologies",
+        "export_value": 623162313.27,
+        "base_country": "United States of America"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "NTMC",
+        "import_value": 623162313.27
+      }
+    ]
+  },
+  {
+    "country": "France",
+    "lat": 46.6034,
+    "long": 1.8883,
+    "value": 110480603.52,
+    "label_text": "Tk 11 cr",
+    "export_barriers": "Y",
+    "linked_countries": ["United States of America"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Yaana Technologies",
+        "export_value": 54288226.46,
+        "base_country": "United States of America"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "Bangladesh Police",
+        "import_value": 220629.54
+      },
+      {
+        "importer_agency": "NTMC",
+        "import_value": 110259974
+      }
+    ]
+  },
+  {
+    "country": "Germany",
+    "lat": 51.1657,
+    "long": 10.4515,
+    "value": 666543706,
+    "label_text": "Tk 66.7 cr",
+    "export_barriers": "Y",
+    "linked_countries": ["Singapore", "United States of America"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Panmark Impex Pte Ltd",
+        "export_value": 602948696.97,
+        "base_country": "Singapore"
+      },
+      {
+        "exporter_company": "Yaana Technologies",
+        "export_value": 63595009,
+        "base_country": "United States of America"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "Bangladesh Police",
+        "import_value": 602948696.97
+      },
+      {
+        "importer_agency": "NTMC",
+        "import_value": 63595009
+      }
+    ]
+  },
+  {
+    "country": "India",
+    "lat": 21.1290,
+    "long": 82.7792,
+    "value": 10361035.38,
+    "label_text": "Tk 1 cr",
+    "export_barriers": "N",
+    "linked_countries": ["United States of America"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Yaana Technologies",
+        "export_value": 10361035.38,
+        "base_country": "United States of America"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "NTMC",
+        "import_value": 10361035.38
+      }
+    ]
+  },
+  {
+    "country": "Italy",
+    "lat": 41.2925,
+    "long": 12.5736,
+    "value": 142086390.69,
+    "label_text": "Tk 14.2 cr",
+    "export_barriers": "Y",
+    "linked_countries": ["United States of America"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Yaana Technologies",
+        "export_value": 142086390.69,
+        "base_country": "United States of America"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "NTMC",
+        "import_value": 142086390.69
+      }
+    ]
+  },
+  {
+    "country": "Malaysia",
+    "lat": 3.139,
+    "long": 101.6869,
+    "value": 114064573,
+    "label_text": "Tk 11.4 cr",
+    "export_barriers": "N",
+    "linked_countries": ["United States of America", "France"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Yaana Technologies",
+        "export_value": 7113656.22,
+        "base_country": "United States of America"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "NTMC",
+        "import_value": 114064573
+      }
+    ]
+  },
+  {
+    "country": "Netherlands",
+    "lat": 52.1326,
+    "long": 5.2913,
+    "value": 28839198.85,
+    "label_text": "Tk 2.9 cr",
+    "export_barriers": "Y",
+    "linked_countries": ["United Arab Emirates"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Spider Digital Innovation FZE",
+        "export_value": 28839198.85,
+        "base_country": "United Arab Emirates"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "NTMC",
+        "import_value": 28839198.85
+      }
+    ]
+  },
+  {
+    "country": "Philippines",
+    "lat": 13.4102,
+    "long": 122.5609,
+    "value": 145266590.17,
+    "label_text": "Tk 14.5 cr",
+    "export_barriers": "N",
+    "linked_countries": ["United States of America"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Yaana Technologies",
+        "export_value": 145266590.17,
+        "base_country": "United States of America"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "NTMC",
+        "import_value": 145266590.17
+      }
+    ]
+  },
+  {
+    "country": "Poland",
+    "lat": 52.237049,
+    "long": 21.017532,
+    "value": 23047841.66,
+    "label_text": "Tk 2.3 cr",
+    "export_barriers": "Y",
+    "linked_countries": ["United States of America"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Yaana Technologies",
+        "export_value": 23047841.66,
+        "base_country": "United States of America"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "NTMC",
+        "import_value": 23047841.66
+      }
+    ]
+  },
+  {
+    "country": "Singapore",
+    "lat": 1.3521,
+    "long": 103.8198,
+    "value": 570000000.12,
+    "label_text": "Tk 57 cr",
+    "export_barriers": "N",
+    "linked_countries": ["Germany", "Czech Republic", "Cyprus", "Canada"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Ecomtrade Holdings Pte Ltd",
+        "export_value": 451136037.19,
+        "base_country": "Singapore"
+      },
+      {
+        "exporter_company": "Teledyne FLIR Detection, Inc. (USA)",
+        "export_value": 116479500.86,
+        "base_country": "United States of America"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "Bangladesh Police",
+        "import_value": 116479500.29
+      },
+      {
+        "importer_agency": "NTMC",
+        "import_value": 451136037.19
+      }
+    ]
+  },
+  {
+    "country": "South Korea",
+    "lat": 37.5665,
+    "long": 126.9780,
+    "value": 24411171.49,
+    "label_text": "Tk 2.44 cr",
+    "export_barriers": "N",
+    "linked_countries": ["United States of America"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Yaana Technologies",
+        "export_value": 24411171.49,
+        "base_country": "United States of America"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "NTMC",
+        "import_value": 24411171.49
+      }
+    ]
+  },
+  {
+    "country": "Switzerland",
+    "lat": 46.8182,
+    "long": 8.2275,
+    "value": 952051377.63,
+    "label_text": "Tk 95.2 cr",
+    "export_barriers": "Y",
+    "linked_countries": ["Singapore", "Cyprus"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Roya International Trading",
+        "export_value": 430652939.24,
+        "base_country": "Singapore"
+      },
+      {
+        "exporter_company": "Passitora Ltd",
+        "export_value": 521398438.39,
+        "base_country": "Cyprus"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "Bangladesh Police",
+        "import_value": 430652939.24
+      },
+      {
+        "importer_agency": "NTMC",
+        "import_value": 521398438.39
+      }
+    ]
+  },
+  {
+    "country": "Taiwan",
+    "lat": 23.6978,
+    "long": 120.9605,
+    "value": 9151031.48,
+    "label_text": "Tk 91.5 lakh",
+    "export_barriers": "N",
+    "linked_countries": ["United States of America"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Yaana Technologies",
+        "export_value": 9151031.48,
+        "base_country": "United States of America"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "NTMC",
+        "import_value": 9151031.48
+      }
+    ]
+  },
+  {
+    "country": "Turkey",
+    "lat": 38.9637,
+    "long": 35.2433,
+    "value": 344177365.89,
+    "label_text": "Tk 34.4 cr",
+    "export_barriers": "N",
+    "linked_countries": [],
+    "exporter_companies": [
+      {
+        "exporter_company": "Bay Galata Danismanlik Hizmetleri A",
+        "export_value": 344177365.89,
+        "base_country": "Turkey"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "Bangladesh Police",
+        "import_value": 344177365.89
+      }
+    ]
+  },
+  {
+    "country": "United Arab Emirates",
+    "lat": 23.4241,
+    "long": 53.8478,
+    "value": 798074617.5,
+    "label_text": "Tk 79.8 cr",
+    "export_barriers": "N",
+    "linked_countries": ["Netherlands"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Speedpial Trading LLC",
+        "export_value": 790806292.22,
+        "base_country": "United Arab Emirates"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "NTMC",
+        "import_value": 798074617.5
+      }
+    ]
+  },
+  {
+    "country": "United Kingdom",
+    "lat": 55.3781,
+    "long": -3.436,
+    "value": 511848696.87,
+    "label_text": "Tk 51.1 cr",
+    "export_barriers": "Y",
+    "linked_countries": ["Singapore", "United States of America"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Panmark Impex Pte Ltd",
+        "export_value": 68502749.80,
+        "base_country": "Singapore"
+      },
+      {
+        "exporter_company": "Yaana Technologies",
+        "export_value": 443345947.07,
+        "base_country": "United States of America"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "Bangladesh Police",
+        "import_value": 68502749.80
+      },
+      {
+        "importer_agency": "NTMC",
+        "import_value": 443345947.07
+      }
+    ]
+  },
+  {
+    "country": "United States of America",
+    "lat": 39.8283,
+    "long": -98.5795,
+    "value": 4779803531.51,
+    "label_text": "Tk 478 cr",
+    "export_barriers": "Y",
+    "linked_countries": ["Singapore", "Philippines", "Taiwan"],
+    "exporter_companies": [
+      {
+        "exporter_company": "Spider Digital Innovation FZE",
+        "export_value": 750900645.45,
+        "base_country": "United Arab Emirates"
+      },
+      {
+        "exporter_company": "Vehere Interactive Pvt Ltd",
+        "export_value": 346629.98,
+        "base_country": "India"
+      },
+      {
+        "exporter_company": "Yaana Technologies",
+        "export_value": 3139052639.43,
+        "base_country": "United States of America"
+      }
+    ],
+    "importers": [
+      {
+        "importer_agency": "NTMC",
+        "import_value": 4763515313.77
+      },
+      {
+          "importer_agency": "RAB",
+          "import_value": 16288217.74
+      }
+    ]
+  }
+]
