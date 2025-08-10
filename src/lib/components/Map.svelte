@@ -375,7 +375,7 @@
         
         {#if activePoint.exporter_companies && activePoint.exporter_companies.length > 0}
           <div class="tooltip-exporters">
-            <strong>Exporter Companies:</strong>
+            <strong>Notable Exporters:</strong>
             <ul>
               {#each [...activePoint.exporter_companies].sort((a,b) => b.export_value - a.export_value) as exporter, i}
                 {@const formattedValue = formatNumberForList(exporter.export_value)}

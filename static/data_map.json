@@ -122,12 +122,12 @@
         "import_value": 687832140.21
       },
       {
-        "importer_agency": "Bangladesh Police",
-        "import_value": 1380467438
+          "importer_agency": "Bangladesh Police",
+          "import_value": 1380467438
       },
       {
-        "importer_agency": "RAB Forces Headquarters",
-        "import_value": 718364761.7
+          "importer_agency": "RAB Forces Headquarters",
+          "import_value": 718364761.7
       }
     ]
   },
@@ -188,11 +188,6 @@
         "exporter_company": "Yaana Technologies",
         "export_value": 54288226.46,
         "base_country": "United States of America"
-      },
-      {
-        "exporter_company": "Intersec SA",
-        "export_value": 56192377.06,
-        "base_country": "France"
       }
     ],
     "importers": [
@@ -294,11 +289,6 @@
         "exporter_company": "Yaana Technologies",
         "export_value": 7113656.22,
         "base_country": "United States of America"
-      },
-      {
-        "exporter_company": "Intersec SA",
-        "export_value": 106950916.77,
-        "base_country": "France"
       }
     ],
     "importers": [
@@ -586,8 +576,8 @@
         "import_value": 4763515313.77
       },
       {
-        "importer_agency": "RAB Forces Headquarters",
-        "import_value": 16288217.74
+          "importer_agency": "RAB Forces Headquarters",
+          "import_value": 16288217.74
       }
     ]
   }
