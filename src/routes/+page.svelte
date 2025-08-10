@@ -188,6 +188,21 @@
     margin: 1.2em 0;
   }
   
+/* --- Drop Cap Style for the first paragraph --- */
+/* --- Drop Cap Style for the first paragraph --- */
+main article.ds-body:first-of-type p:first-of-type::first-letter {
+  float: left;
+  font-size: 3.5rem; /* Made font slightly smaller to fit in the box */
+  line-height: 1;  /* Adjusted for better vertical alignment in the box */
+  font-weight: 700;
+  color: #ffffff; /* Changed letter color to white */
+  background-color: rgba(204, 24, 24, 0.75); /* Red background with 70% opacity */
+  padding: 0.5rem 1rem;      /* Added padding to create space inside the box */
+  margin-right: 0.8rem;      /* Increased margin for more space next to the box */
+  margin-top: 0.3rem;
+  border-radius: 4px;        /* Added rounded corners to the box */
+}
+
   /* --- Accessibility --- */
   .skip-to-content {
     position: absolute;
@@ -215,11 +230,22 @@
   .qa-answer { color: #212529; margin-bottom: 2.5rem; }
   .qa-section p:last-of-type { margin-bottom: 0; }
 
+  /* --- START: REUSABLE HIGHLIGHT BOX STYLE --- */
+  .highlight-box {
+    background-color: #f8f9fa;
+    border-left: 4px solid #b30000;
+    padding: 1.5rem 2rem;
+    margin-top: 2.5rem;
+    margin-bottom: 2.5rem;
+    border-radius: 3px;
+  }
+  /* --- END: REUSABLE HIGHLIGHT BOX STYLE --- */
+
   /* --- START: DOCUMENT IMAGE & MODAL STYLES --- */
   .doc-image-grid {
     display: flex;
     gap: 1.5rem; /* Space between the two images */
-    margin-top: 1.5rem; /* Space below the paragraph */
+    /* REMOVED: margin-top: 1.5rem; The parent's padding now handles the spacing. */
   }
 
   .doc-preview-item {
@@ -537,7 +563,7 @@
   <!-- ============================================= -->
   <!-- == DOCUMENT PREVIEW SECTION == -->
   <!-- ============================================= -->
-  <article class="ds-body">
+  <article class="ds-body highlight-box">
 
 
     <div class="doc-image-grid">
@@ -600,5 +626,6 @@
 
     <p>The Daily Star also emailed Yaana, Teledyne, Octasic, Vehere and Roya International, the company which had supplied goods from the Swiss surveillance company ATECS AG but did not receive any response. We also sent written questions to Rab and police, but they did not respond.&nbsp;</p>
   </article>
+<br />
 
 </main>
