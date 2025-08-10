@@ -128,7 +128,7 @@
     {
       "@context": "https://schema.org",
       "@type": "NewsArticle",
-      "headline": "Surveillance Republic",
+      "headline": "Surveillance State",
       "author": {
         "@type": "Person",
         "name": "Muhammad Imran",
