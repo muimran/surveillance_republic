@@ -73,7 +73,7 @@
       "author": {
         "@type": "Person",
         "name": "Muhammad Imran",
-        "url": "https://muhammadimran.me"
+        "url": "https://muhammadimran."
       },
       "publisher": {
         "@type": "Organization",
@@ -125,7 +125,7 @@
   @media (max-width: 700px) {
     .ds-body {
       /* FIXED: Reduced side padding for mobile */
-      padding: 0 1rem; 
+      padding: 0 12px;
       font-size: 1.05rem;
     }
   }
@@ -311,7 +311,7 @@
   
     <p class="qa-question"><strong>TDS:</strong> What steps have been taken to take out the ILIS from operation?</p>
     <p class="qa-answer"><strong>NTMC:</strong> Lawful Telecommunication Interception Systems are technical platforms essential for law enforcement agencies, investigation agencies and intelligence agencies to collect necessary information to investigate cases and identify the accused. Countries around the world have such practice. NTMC established and maintains a few basic LI platforms to support mentioned agencies.</p>
-  
+  <br/>
     <p class="qa-question"><strong>TDS:</strong> NTMC had installed Deep Packet Inspection (DPI) devices for monitoring and filtering subscriber internet usage. Are these still operational in Data Centres 3 and 4?</p>
     <p class="qa-answer"><strong>NTMC:</strong> DPI devices are not in operation now. Their functionality is being tested. However, a few online betting sites prohibited by the government have been blocked as test purposes. The future usage of this system will depend on proper guidelines/policy.</p>  
   
