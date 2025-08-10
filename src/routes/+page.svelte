@@ -45,7 +45,7 @@
   <title>Surveillance Republic | The Daily Star</title>
   <meta name="description" content="‘Surveillance Republic’ is a data-driven investigation by Muhammad Imran, published in The Daily Star. It explores how surveillance technology is reshaping governance and civil liberties in Bangladesh." />
   <meta name="author" content="Muhammad Imran" />
-  <meta name="keywords" content="Surveillance Republic, Muhammad Imran, The Daily Star, data journalism, Bangladesh, surveillance, civil liberties, visual storytelling, investigative reporting" />
+  <meta name="keywords" content="Surveillance Republic, The Daily Star, data journalism, Bangladesh, surveillance, civil liberties, visual storytelling, investigative reporting" />
   
   <!-- Open Graph / Facebook -->
   <meta property="og:title" content="Surveillance Republic | The Daily Star" />
@@ -57,7 +57,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Surveillance Republic | The Daily Star" />
-  <meta name="twitter:description" content="How surveillance technology is reshaping governance in Bangladesh. A data journalism piece by Muhammad Imran." />
+  <meta name="twitter:description" content="How surveillance technology is reshaping governance in Bangladesh. " />
   <meta name="twitter:image" content={socialImageURL} />
   <meta name="twitter:creator" content={yourTwitterHandle} />
 
