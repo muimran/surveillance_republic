@@ -36,6 +36,6 @@
   /* Optional: Add some padding to your main content area so it's not
      stuck to the edges of the screen once you scroll past the header. */
   main {
-    padding: 2rem;
+    padding: 0rem;
   }
 </style>

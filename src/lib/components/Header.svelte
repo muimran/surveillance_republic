@@ -42,6 +42,11 @@
                 <span class="role">Graphics:</span>
                 <span class="names">Anwar Sohel</span>
             </div>
+
+            <div class="credit-line">
+              <span class="role">Editing:</span>
+              <span class="names">Martin Swapan Pandey</span>
+          </div>
             <!-- --- END: MODIFIED HTML STRUCTURE --- -->
         </div>
       </div>
@@ -88,7 +93,7 @@
 
 .kicker {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-size: 0.9rem; font-weight: 600; color: #555; text-transform: uppercase;
+  font-size: 1.2rem; font-weight: 600; color: #555; text-transform: uppercase;
   letter-spacing: 0.05em; margin: 0 0 0.75rem 0; text-align: center;
 }
 

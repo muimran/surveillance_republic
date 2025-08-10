@@ -24,7 +24,7 @@
         type: 'column'
       },
       title: {
-        text: 'How much agencies spent on surveillance (in crore ৳)',
+        text: 'How much agencies spent on surveillance (in cr/BDT)',
         align: 'center',
         style: {
           fontSize: window.innerWidth < 600 ? '14px' : '20px'
