@@ -15,6 +15,9 @@
   
   let customHoverTooltip;
 
+  // Reactive variable to control the sticky state of the zoom controls
+  let isZoomSticky = false;
+
   let isMobile = false;
   if (typeof window !== 'undefined') {
     isMobile = window.innerWidth < 600;
@@ -25,6 +28,8 @@
   let mapHeight = isMobile ? '300px' : '1000px';
   let initialZoom = isMobile ? 0.5 : 2.5;
   let minZoom = isMobile ? 0.5 : 2.5;
+
+  let wheelZoomTimeout;
 
   function valueToPixelSize(value) {
     const baseSize = isMobile ? 5 : 15;
@@ -89,6 +94,9 @@
   }
 
   let closeHandler;
+  let wheelHandler; 
+  let visibilityObserver;
+  let stickyObserver;
 
   onMount(() => {
     if (typeof window === 'undefined') return;
@@ -105,7 +113,7 @@
       });
     }
 
-    const observer = new IntersectionObserver((entries) => {
+    visibilityObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => { 
         isMapVisible = entry.isIntersecting;
         if (isMapVisible) {
@@ -113,6 +121,21 @@
         }
       });
     }, { threshold: 0.1 });
+
+    stickyObserver = new IntersectionObserver((entries) => {
+        const entry = entries[0];
+        const stickyTopPosition = 20; // Matches the `top` value in our CSS
+        const controlHeight = 100; // An estimate for the height of the controls + padding
+        
+        isZoomSticky = 
+          entry.isIntersecting &&
+          entry.boundingClientRect.top <= stickyTopPosition &&
+          entry.boundingClientRect.bottom >= (stickyTopPosition + controlHeight);
+
+    }, {
+        threshold: Array.from({ length: 101 }, (_, i) => i / 100)
+    });
+
 
     import('leaflet').then(L => {
       window.L = L;
@@ -125,6 +148,24 @@
         maxBounds: [ [-70, -170], [80, 170] ],
         maxBoundsViscosity: 1.0
       }).setView([initialLat, initialLng], initialZoom);
+
+      if (!isMobile) {
+        wheelHandler = (event) => {
+          if (event.ctrlKey) {
+            event.preventDefault();
+            if (map) {
+              map.scrollWheelZoom.enable();
+              clearTimeout(wheelZoomTimeout);
+              wheelZoomTimeout = setTimeout(() => {
+                if(map) map.scrollWheelZoom.disable();
+              }, 200);
+            }
+          } else {
+            if(map) map.scrollWheelZoom.disable();
+          }
+        };
+        mapDiv.addEventListener('wheel', wheelHandler, { passive: false });
+      }
 
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
@@ -248,7 +289,7 @@
                           <span class="item-value"><strong>${formattedValue}</strong></span>
                         </li>`;
             }).join('');
-            exporterHtml = `<div class="tooltip-exporters"><strong>Notable Exporters:</strong><ul>${exporterListItems}</ul></div>`;
+            exporterHtml = `<div class="tooltip-exporters"><strong>Exporter Companies:</strong><ul>${exporterListItems}</ul></div>`;
           }
           const importerLabel = point.importers.length > 1 ? 'Importer Agencies' : 'Importer Agency';
           const sortedImporters = [...point.importers].sort((a, b) => b.import_value - a.import_value);
@@ -342,89 +383,94 @@
 
       if (points && points.length > 0) { points.forEach(point => markersLayer.addLayer(createMarker(point))); }
       map.on('zoomend', updateCircleMarkers);
-      observer.observe(mapDiv);
+
+      visibilityObserver.observe(mapDiv);
+      stickyObserver.observe(mapDiv);
     });
 
     return () => {
-      if (observer) observer.disconnect();
+      if (visibilityObserver) visibilityObserver.disconnect();
+      if (stickyObserver) stickyObserver.disconnect();
       if (closeHandler) {
         document.removeEventListener('click', closeHandler, true);
         document.removeEventListener('touchstart', closeHandler, true);
       }
+      if (wheelHandler && mapDiv) {
+        mapDiv.removeEventListener('wheel', wheelHandler);
+      }
+      clearTimeout(wheelZoomTimeout);
     };
   });
 </script>
 
-<div class="map-wrapper" style="height: {mapHeight};">
+<div class="map-wrapper" style="height: {mapHeight};" class:is-sticky={isZoomSticky}>
   <div bind:this={mapDiv} id="map" style="height: 100%; width: 100%;"></div>
-
   <div bind:this={customHoverTooltip} id="custom-hover-tooltip"></div>
-
-  {#if activePoint && isMobile}
-    <div 
-      class="mobile-tooltip"
-      class:position-top={tooltipPosition === 'top'}
-      class:position-bottom={tooltipPosition === 'bottom'}
-      in:scale={{ duration: 150, start: 0.95, easing: (t) => t * (2 - t) }}
-      out:fade={{ duration: 100 }}
-    >
-      <div class="tooltip-content">
-        <div class="tooltip-header">
-            <strong>{activePoint.country}</strong>
-            <div class="tooltip-amount">Amount: {activePoint.label_text.replace('Tk', '৳')}</div>
-        </div>
-        
-        {#if activePoint.exporter_companies && activePoint.exporter_companies.length > 0}
-          <div class="tooltip-exporters">
-            <strong>Notable Exporters:</strong>
-            <ul>
-              {#each [...activePoint.exporter_companies].sort((a,b) => b.export_value - a.export_value) as exporter, i}
-                {@const formattedValue = formatNumberForList(exporter.export_value)}
-                <li class="tooltip-list-item" in:fade={{ duration: 250, delay: 50 + i * 50 }}>
-                  <span class="item-name">
-                    {#if exporter.base_country && exporter.base_country !== activePoint.country}
-                      <strong style="color: #c00007;">{exporter.exporter_company}</strong>
-                    {:else}
-                      <strong style="color: #0056b3;">{exporter.exporter_company}</strong>
-                    {/if}
-                    {#if exporter.base_country}
-                      <span style="font-size: 10px; color: #555; font-style: italic;"> (based in {exporter.base_country})</span>
-                    {/if}
-                  </span>
-                  {#if formattedValue}
-                    <span class="item-value"><strong>{formattedValue}</strong></span>
-                  {/if}
-                </li>
-              {/each}
-            </ul>
-          </div>
-        {/if}
-
-        <div class="tooltip-importers">
-          <strong>{activePoint.importers.length > 1 ? 'Importer Agencies' : 'Importer Agency'}:</strong>
-          <ul>
-            {#each [...activePoint.importers].sort((a,b) => b.import_value - a.import_value) as importer, i}
-              {@const formattedValue = formatNumberForList(importer.import_value)}
-              <li class="tooltip-list-item" in:fade={{ duration: 250, delay: 50 + (activePoint.exporter_companies.length + i) * 50 }}>
-                <span class="item-name"><strong>{importer.importer_agency}</strong></span>
-                {#if formattedValue}
-                  <span class="item-value"><strong>{formattedValue}</strong></span>
-                {/if}
-              </li>
-            {/each}
-          </ul>
-        </div>
-
-        {#if activePoint.export_barriers === 'Y'}
-          <div class="tooltip-barrier-notice">
-            {activePoint.country} prohibits export of surveillance equipment to repressive regimes.
-          </div>
-        {/if}
-      </div>
-    </div>
-  {/if}
+{#if activePoint && isMobile}
+<div
+class="mobile-tooltip"
+class:position-top={tooltipPosition === 'top'}
+class:position-bottom={tooltipPosition === 'bottom'}
+in:scale={{ duration: 150, start: 0.95, easing: (t) => t * (2 - t) }}
+out:fade={{ duration: 100 }}
+>
+<div class="tooltip-content">
+<div class="tooltip-header">
+<strong>{activePoint.country}</strong>
+<div class="tooltip-amount">Amount: {activePoint.label_text.replace('Tk', '৳')}</div>
 </div>
 
+{#if activePoint.exporter_companies && activePoint.exporter_companies.length > 0}
+      <div class="tooltip-exporters">
+        <strong>Notable Exporters:</strong>
+        <ul>
+          {#each [...activePoint.exporter_companies].sort((a,b) => b.export_value - a.export_value) as exporter, i}
+            {@const formattedValue = formatNumberForList(exporter.export_value)}
+            <li class="tooltip-list-item" in:fade={{ duration: 250, delay: 50 + i * 50 }}>
+              <span class="item-name">
+                {#if exporter.base_country && exporter.base_country !== activePoint.country}
+                  <strong style="color: #c00007;">{exporter.exporter_company}</strong>
+                {:else}
+                  <strong style="color: #0056b3;">{exporter.exporter_company}</strong>
+                {/if}
+                {#if exporter.base_country}
+                  <span style="font-size: 10px; color: #555; font-style: italic;"> (based in {exporter.base_country})</span>
+                {/if}
+              </span>
+              {#if formattedValue}
+                <span class="item-value"><strong>{formattedValue}</strong></span>
+              {/if}
+            </li>
+          {/each}
+        </ul>
+      </div>
+    {/if}
+
+    <div class="tooltip-importers">
+      <strong>{activePoint.importers.length > 1 ? 'Importer Agencies' : 'Importer Agency'}:</strong>
+      <ul>
+        {#each [...activePoint.importers].sort((a,b) => b.import_value - a.import_value) as importer, i}
+          {@const formattedValue = formatNumberForList(importer.import_value)}
+          <li class="tooltip-list-item" in:fade={{ duration: 250, delay: 50 + (activePoint.exporter_companies.length + i) * 50 }}>
+            <span class="item-name"><strong>{importer.importer_agency}</strong></span>
+            {#if formattedValue}
+              <span class="item-value"><strong>{formattedValue}</strong></span>
+            {/if}
+          </li>
+        {/each}
+      </ul>
+    </div>
+
+    {#if activePoint.export_barriers === 'Y'}
+      <div class="tooltip-barrier-notice">
+        {activePoint.country} prohibits export of surveillance equipment to repressive regimes.
+      </div>
+    {/if}
+  </div>
+</div>
+{/if}
+
+</div>
 <style>
   :global(.country-polygon) {
     cursor: default !important;
@@ -504,11 +550,9 @@
   .mobile-tooltip .tooltip-importers,
   .mobile-tooltip .tooltip-exporters { word-wrap: break-word; }
 
-  /* --- ADD THIS NEW RULE --- */
   .mobile-tooltip .tooltip-exporters {
-    margin-top: 16px; /* Adjust this value as needed */
+    margin-top: 16px;
   }
-  /* ----------------------- */
   
   .mobile-tooltip .tooltip-importers > strong,
   .mobile-tooltip .tooltip-exporters > strong {
@@ -636,4 +680,31 @@
   :global(.leaflet-control-zoom-in) { border-top-left-radius: 8px !important; border-top-right-radius: 8px !important; border-bottom: 1px solid #cccccc !important; }
   :global(.leaflet-control-zoom-out) { margin-top: 0 !important; border-bottom-left-radius: 8px !important; border-bottom-right-radius: 8px !important; }
   :global(.leaflet-control-zoom a:hover) { background-color: #f4f4f4 !important; transform: none; }
+
+  /* --- DESKTOP ZOOM CONTROL STYLES --- */
+  @media (min-width: 601px) {
+    /* Default state: controls are positioned normally within the map div */
+    :global(.leaflet-control-zoom) {
+      left: 25px; 
+      z-index: 1001; 
+    }
+    
+    /* When the wrapper has the .is-sticky class, we make the controls fixed */
+    .map-wrapper.is-sticky :global(.leaflet-control-zoom) {
+      position: fixed !important;
+      top: 20px; /* Position from top of the screen */
+    }
+    
+    /* Add the red outline/border to the control's container */
+    :global(.leaflet-control-zoom.leaflet-bar) {
+      border: 2px solid #e63946 !important;
+    }
+
+    /* Target the individual + and - buttons to make them bigger */
+    :global(.leaflet-control-zoom a) {
+      width: 35px !important;
+      height: 35px !important;
+      line-height: 35px !important;
+    }
+  }
 </style>
