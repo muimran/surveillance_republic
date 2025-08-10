@@ -55,7 +55,7 @@
     scroller
       .setup({
         step: '.scrolly-step',
-        offset: 0.5, // Adjusted for smoother transitions
+        offset: 0.75, // Adjusted for smoother transitions
         debug: false
       })
       .onStepEnter(handleStepEnter)
