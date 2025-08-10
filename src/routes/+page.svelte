@@ -213,6 +213,25 @@
 
 
 
+
+  <article class="ds-body">
+    <h2>NTMC's reply to our questions</h2>
+  <p>TDS: What steps have been taken to take out the ILIS from operation?</p>
+  
+  <p>NTMC: Lawful Telecommunication Interception Systems are technical platforms essential for law enforcement agencies, investigation agencies and intelligence agencies to collect necessary information to investigate cases and identify the accused. Countries around the world have such practice. NTMC established and maintains a few basic LI platforms to support mentioned agencies.</p>
+  <p>TDS: NTMC had installed Deep Packet Inspection (DPI) devices for monitoring and filtering subscriber internet usage. Are these still operational in Data Centres 3 and 4?</p>
+  
+  <p>NTMC: DPI devices are not in operation now. Their functionality is being tested. However, a few online betting sites prohibited by the government have been blocked as test purposes. The future usage of this system will depend on proper guidelines/policy.</p>  
+  <p>TDS: In 2022, NTMC purchased a system from Intersec (France) that allowed NTMC to get instant, precise instant and historical location of individuals. Is the system installed by Intersec still active?</p>
+  
+  <p>NTMC: Yes, the system is active now. Law enforcement agencies, investigation agencies and intelligence agencies utilise the service to locate the accused and victims. More importantly, 999 and Fire Services use this system to instantly locate the victims.</p> 
+  <p>TDS: Does NTMC still pull customer data (Registration information, CDR, SMS content, NID, roaming status, recharge details, package details etc) using an API plugin provided by telecom operators? If yes, then do you obtain a warrant from a magistrate beforehand?</p>
+  
+  <p>NTMC: As said before, law enforcement agencies, investigation agencies and intelligence agencies utilise the platform to investigate cases and identify the accused. Mentioned agencies complete necessary processes at their end before collecting information.<strong>&gt;&gt;</strong></p>
+</article>
+  
+
+
   <article class="ds-body">
     <h2>How the surveillance works</h2>
     <p>The Daily Star shared the list of components purchased by the NTMC with our in-house network specialists. Using information about the components, they <strong>r</strong>econstructed the ILIS network (see the operational and network structure online) as outlined by its contract.&nbsp;</p>
