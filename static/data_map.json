@@ -16,7 +16,7 @@
     ],
     "importers": [
       {
-        "importer_agency": "RAB Forces Headquarters",
+        "importer_agency": "RAB",
         "import_value": 30045005.81
       }
     ]
@@ -64,7 +64,7 @@
         "import_value": 661783350.04
       },
       {
-        "importer_agency": "RAB Forces Headquarters",
+        "importer_agency": "RAB",
         "import_value": 222776346.94
       }
     ]
@@ -126,7 +126,7 @@
           "import_value": 1380467438
       },
       {
-          "importer_agency": "RAB Forces Headquarters",
+          "importer_agency": "RAB",
           "import_value": 718364761.7
       }
     ]
@@ -576,7 +576,7 @@
         "import_value": 4763515313.77
       },
       {
-          "importer_agency": "RAB Forces Headquarters",
+          "importer_agency": "RAB",
           "import_value": 16288217.74
       }
     ]

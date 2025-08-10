@@ -317,7 +317,7 @@
                           <span class="item-value"><strong>${formattedValue}</strong></span>
                         </li>`;
             }).join('');
-            exporterHtml = `<div class="tooltip-exporters"><strong>Exporter Companies:</strong><ul>${exporterListItems}</ul></div>`;
+            exporterHtml = `<div class="tooltip-exporters"><strong>Notable Exporters:</strong><ul>${exporterListItems}</ul></div>`;
           }
           const importerLabel = point.importers.length > 1 ? 'Importer Agencies' : 'Importer Agency';
           const sortedImporters = [...point.importers].sort((a, b) => b.import_value - a.import_value);

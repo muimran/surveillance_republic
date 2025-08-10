@@ -7,7 +7,7 @@
   const rawData = [
     { name: 'NTMC', amount: 9043902697.41, color: '#c00007' },
     { name: 'POLICE', amount: 3787581626.71, color: '#c00007' },
-    { name: 'RAB FORCES HQ', amount: 987474332.19, color: '#c00007' }   
+    { name: 'RAB', amount: 987474332.19, color: '#c00007' }   
   ];
 
 
