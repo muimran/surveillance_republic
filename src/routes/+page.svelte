@@ -3,6 +3,7 @@
   import BarChart from '$lib/components/BarChart.svelte';
   import ExplainerScrolly from '$lib/components/ExplainerScrolly.svelte';
   import { page } from '$app/stores';
+  import { onMount } from 'svelte'; // <-- ADDED: Svelte lifecycle function
 
   export let data;
 
@@ -13,8 +14,31 @@
   
   // Publication dates
   const pubDate = new Date('2025-08-01').toISOString();
+
+  // --- ADDED: Progress Bar Logic ---
+  let scrollPercent = 0;
+
+  function handleScroll() {
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    
+    // Prevent division by zero if scrollHeight is 0 (e.g., on a very short page)
+    if (scrollHeight > 0) {
+      scrollPercent = (scrollTop / scrollHeight) * 100;
+    } else {
+      scrollPercent = 0;
+    }
+  }
+
+  // Set initial position on load in case user refreshes mid-page
+  onMount(() => {
+    handleScroll();
+  });
+  // --- END: Progress Bar Logic ---
 </script>
 
+<!-- ADDED: Svelte window event listener for scrolling -->
+<svelte:window on:scroll={handleScroll} />
 
 <svelte:head>
   <!-- Primary Meta Tags -->
@@ -70,6 +94,24 @@
 </svelte:head>
 
 <style>
+  /* --- ADDED: Progress Bar Styles --- */
+  .progress-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999; /* Ensures it's on top of other content */
+    height: 4px; 
+    background-color: #e0e0e0; /* A light grey for the track */
+  }
+
+  .progress-bar {
+    height: 100%;
+    /* A red that matches your headline's feel */
+    background-color: #b30000; 
+  }
+  /* --- END: Progress Bar Styles --- */
+
   .ds-body {
     max-width: 680px;
     margin: 2.5rem auto;
@@ -148,6 +190,11 @@
     margin-bottom: 0;
   }
 </style>
+
+<!-- ADDED: Progress Bar HTML. Its 'fixed' position means it can go anywhere. -->
+<div class="progress-container">
+  <div class="progress-bar" style="width: {scrollPercent}%" />
+</div>
 
 <!-- Accessibility Skip Link -->
 <a href="#main-content" class="skip-to-content">Skip to main content</a>
@@ -383,7 +430,7 @@
 
 <p>One of those suppliers, called Spider Digital Innovation FZE, despite being UAE-based, is Bangladeshi-led. The company belongs to Kazi Monirul Kabir, who was formerly the communications lead at two major telecom operators in Bangladesh. He is also the former country manager for Google in Bangladesh.&nbsp;</p>
 
-<p>They provided NTMC with at least 31 shipments, including the SSL decryption platform, a covert surveillance tool that silently eavesdrops on mobile calls and data called Tactical Passive Cellular Interceptor, and components for an internet traffic inspection system called the Gigamon GigaVUE-HC3 visibility platform.&nbsp;</p>
+<p>They provided NTMC with at least 30 shipments, including the SSL decryption platform, a covert surveillance tool that silently eavesdrops on mobile calls and data called Tactical Passive Cellular Interceptor, and components for an internet traffic inspection system called the Gigamon GigaVUE-HC3 visibility platform.&nbsp;</p>
 
 <p>Kabir categorically stated that they never supplied systems that could be used for human rights abuses. Regarding the Gigamon platform, he said, "You have correctly noted that it gives network traffic visibility, but the project is based on metadata collection, focusing solely on gathering metadata for visibility purposes. There is no option to collect user content."&nbsp;</p>
 
