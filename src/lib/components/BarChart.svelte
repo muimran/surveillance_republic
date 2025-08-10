@@ -5,10 +5,12 @@
   let chartContainer;
 
   const rawData = [
-    { name: 'NTMC', amount: 6545237465.52, color: '#c00007' },
+    { name: 'NTMC', amount: 9043902697.41, color: '#c00007' },
     { name: 'POLICE', amount: 3787581626.71, color: '#c00007' },
-    { name: 'RAB FORCES HQ', amount: 1015960974.07, color: '#c00007' }
+    { name: 'RAB FORCES HQ', amount: 987474332.19, color: '#c00007' }   
   ];
+
+
 
   const formattedData = rawData.map(d => ({
     name: d.name,
@@ -22,7 +24,7 @@
         type: 'column'
       },
       title: {
-        text: 'How much agencies spent on surveillance (in crore)',
+        text: 'How much agencies spent on surveillance (in crore ৳)',
         align: 'center',
         style: {
           fontSize: window.innerWidth < 600 ? '14px' : '20px'
@@ -53,7 +55,7 @@
         enabled: false
       },
       tooltip: {
-        pointFormat: '{series.name}: <b>{point.y:.2f} crore</b>'
+        pointFormat: '{series.name}: <b>{point.y:.2f} crore ৳</b>'
       },
       series: [{
         name: 'Spending',

@@ -136,7 +136,8 @@
       const countryAliasMap = {
         'United States of America': 'USA',
         'United Kingdom': 'UK',
-        'N. Cyprus': 'Cyprus'
+        'N. Cyprus': 'Cyprus',
+        'Czechia': 'Czech Republic'
       };
 
       function getCountryStyle(feature) {
