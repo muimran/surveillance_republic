@@ -15,7 +15,6 @@
   
   let customHoverTooltip;
 
-  // Reactive variable to control the sticky state of the zoom controls
   let isZoomSticky = false;
 
   let isMobile = false;
@@ -124,8 +123,8 @@
 
     stickyObserver = new IntersectionObserver((entries) => {
         const entry = entries[0];
-        const stickyTopPosition = 20; // Matches the `top` value in our CSS
-        const controlHeight = 100; // An estimate for the height of the controls + padding
+        const stickyTopPosition = 20;
+        const controlHeight = 150; // Increased to account for reset button
         
         isZoomSticky = 
           entry.isIntersecting &&
@@ -143,11 +142,40 @@
         scrollWheelZoom: false,
         touchZoom: isMobile,
         doubleClickZoom: true,
-        zoomControl: true,
+        zoomControl: true, // Keep this true, we will style it
         minZoom: minZoom,
         maxBounds: [ [-70, -170], [80, 170] ],
         maxBoundsViscosity: 1.0
       }).setView([initialLat, initialLng], initialZoom);
+
+      // --- NEW: Custom Reset View Control ---
+      function resetMapView() {
+        if (map) {
+          map.flyTo([initialLat, initialLng], initialZoom);
+        }
+      }
+
+      L.Control.ResetView = L.Control.extend({
+          onAdd: function(map) {
+              const container = L.DomUtil.create('div', 'leaflet-control-reset leaflet-bar');
+              const button = L.DomUtil.create('a', 'leaflet-control-reset-button', container);
+              button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 15H3v4c0 1.1.9 2 2 2h4v-2H5v-4zM5 5h4V3H5c-1.1 0-2 .9-2 2v4h2V5zm14-2h-4v2h4v4h2V5c0-1.1-.9-2-2-2zm0 16h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4z"/></svg>`;
+              button.href = '#';
+              button.role = 'button';
+              button.title = 'Reset View';
+
+              L.DomEvent.on(button, 'click', L.DomEvent.stop);
+              L.DomEvent.on(button, 'click', resetMapView);
+              
+              return container;
+          },
+          onRemove: function(map) {
+              // Cleanup if needed
+          }
+      });
+
+      new L.Control.ResetView({ position: 'topleft' }).addTo(map);
+      // --- END NEW ---
 
       if (!isMobile) {
         wheelHandler = (event) => {
@@ -680,31 +708,70 @@ out:fade={{ duration: 100 }}
   :global(.leaflet-control-zoom-in) { border-top-left-radius: 8px !important; border-top-right-radius: 8px !important; border-bottom: 1px solid #cccccc !important; }
   :global(.leaflet-control-zoom-out) { margin-top: 0 !important; border-bottom-left-radius: 8px !important; border-bottom-right-radius: 8px !important; }
   :global(.leaflet-control-zoom a:hover) { background-color: #f4f4f4 !important; transform: none; }
+  
+  /* --- NEW: Base styles for the reset button --- */
+  :global(.leaflet-control-reset) {
+    margin-top: 10px;
+  }
+  :global(.leaflet-control-reset-button) {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    width: 30px !important; 
+    height: 30px !important;
+    background-color: #ffffff;
+    border-radius: 8px !important;
+    cursor: pointer;
+    color: #333333 !important;
+    transition: background-color 0.16s ease-out;
+  }
+  :global(.leaflet-control-reset-button:hover) {
+    background-color: #f4f4f4 !important;
+  }
+  :global(.leaflet-control-reset-button svg) {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+  }
+  /* --- END NEW --- */
 
-  /* --- DESKTOP ZOOM CONTROL STYLES --- */
+  /* --- DESKTOP ZOOM & RESET CONTROL STYLES --- */
   @media (min-width: 601px) {
-    /* Default state: controls are positioned normally within the map div */
-    :global(.leaflet-control-zoom) {
+    :global(.leaflet-control-zoom),
+    :global(.leaflet-control-reset) {
       left: 25px; 
       z-index: 1001; 
     }
     
-    /* When the wrapper has the .is-sticky class, we make the controls fixed */
-    .map-wrapper.is-sticky :global(.leaflet-control-zoom) {
+    .map-wrapper.is-sticky :global(.leaflet-control-zoom),
+    .map-wrapper.is-sticky :global(.leaflet-control-reset) {
       position: fixed !important;
-      top: 20px; /* Position from top of the screen */
+    }
+
+    .map-wrapper.is-sticky :global(.leaflet-control-zoom) {
+      top: 20px;
     }
     
-    /* Add the red outline/border to the control's container */
-    :global(.leaflet-control-zoom.leaflet-bar) {
+    .map-wrapper.is-sticky :global(.leaflet-control-reset) {
+      /* Position below the zoom control (20px top + 72px zoom height + 10px margin) */
+      top: 102px;
+    }
+    
+    :global(.leaflet-control-zoom.leaflet-bar),
+    :global(.leaflet-control-reset.leaflet-bar) {
       border: 2px solid #e63946 !important;
     }
 
-    /* Target the individual + and - buttons to make them bigger */
     :global(.leaflet-control-zoom a) {
       width: 35px !important;
       height: 35px !important;
       line-height: 35px !important;
+    }
+
+    /* --- NEW: Desktop size for reset button --- */
+    :global(.leaflet-control-reset-button) {
+      width: 35px !important;
+      height: 35px !important;
     }
   }
 </style>
