@@ -98,13 +98,13 @@
 
 <svelte:head>
   <!-- Primary Meta Tags -->
-  <title>Awami League Government Phone Spying | AL govt’s secret SURVEILLANCE STATE | Awami League Surveillance Scandal | The Daily Star</title>
-  <meta name="description" content="‘Awami League Government Phone Spying: From snooping devices carried in backpacks for locating people through their phones to a massive infrastructure that can intercept even end-to-end encryption from a central command centre, the Awami League government had been on an increasingly aggressive trajectory towards building a powerful surveillance state." />
+  <title>Awami League Government's Secret Surveillance State | The Daily Star</title>
+  <meta name="description" content="Awami League Government Phone Spying: From snooping devices carried in backpacks for locating people through their phones to a massive infrastructure that can intercept even end-to-end encryption from a central command centre, the Awami League government had been on an increasingly aggressive trajectory towards building a powerful surveillance state." />
   <meta name="author" content="Zyma Islam, Mohammad Suman, Mahmudul Hasan, Muhammad Imran, Martin Swapan Pandey" />
   <meta name="keywords" content="Surveillance Republic, The Daily Star, data journalism, Bangladesh, surveillance, civil liberties, visual storytelling, investigative reporting, Bangladesh government phone spying, Sheikh Hasina surveillance allegations, Bangladesh mass surveillance system, NTMC ILIS interception Bangladesh, Awami League surveillance scandal, Bangladesh privacy rights violation, IMSI catcher Bangladesh police, Lawful Telecommunication Interception Act Bangladesh, Yaana Technologies Bangladesh deal, RAB surveillance equipment Bangladesh" />
   
   <!-- Open Graph / Facebook / LinkedIn -->
-  <meta property="og:title" content="Awami League Government Phone Spying | AL govt’s secret SURVEILLANCE STATE | Awami League Surveillance Scandal | The Daily Star" />
+  <meta property="og:title" content="Awami League Government's Secret Surveillance State | The Daily Star" />
   <meta property="og:description" content="Awami League Government Phone Spying: From snooping devices carried in backpacks for locating people through their phones to a massive infrastructure that can intercept even end-to-end encryption from a central command centre, the Awami League government had been on an increasingly aggressive trajectory towards building a powerful surveillance state." />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://surveillancestate.thedailystar.net/" />
@@ -115,7 +115,7 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Awami League Government Phone Spying | AL govt’s secret SURVEILLANCE STATE | Awami League Surveillance Scandal | The Daily Star" />
+  <meta name="twitter:title" content="Awami League Government's Secret Surveillance State | The Daily Star" />
   <meta name="twitter:description" content="Surveillance Republic, The Daily Star, data journalism, Bangladesh, surveillance, civil liberties, visual storytelling, investigative reporting, Bangladesh government phone spying, Sheikh Hasina surveillance allegations, Bangladesh mass surveillance system, NTMC ILIS interception Bangladesh, Awami League surveillance scandal, Bangladesh privacy rights violation, IMSI catcher Bangladesh police, Lawful Telecommunication Interception Act Bangladesh, Yaana Technologies Bangladesh deal, RAB surveillance equipment Bangladesh." />
   <meta name="twitter:image" content="https://surveillancestate.thedailystar.net/images/header.gif" />
 

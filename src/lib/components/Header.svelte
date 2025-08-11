@@ -5,9 +5,10 @@
 <div class="header-container">
     <div class="header-half logo-side">
       <div class="content-wrapper">
-        <a href="{base}/" rel="noopener noreferrer">
-          <img src="{base}/images/ds_logo.svg" alt="The Daily Star Logo" class="logo-image" />
+        <a href="https://www.thedailystar.net/" rel="noopener noreferrer">
+          <img src={`${base}/images/ds_logo.svg`} alt="The Daily Star Logo" class="logo-image" />
         </a>
+        
         
         <div class="embellishment">
           <hr class="separator-line" />
