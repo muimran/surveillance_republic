@@ -98,14 +98,14 @@
 
 <svelte:head>
   <!-- Primary Meta Tags -->
-  <title>Surveillance State | The Daily Star</title>
-  <meta name="description" content="‘Surveillance Republic’ is a data-driven investigation published in The Daily Star. It explores how surveillance technology is reshaping governance and civil liberties in Bangladesh." />
-  <meta name="author" content="Muhammad Imran" />
-  <meta name="keywords" content="Surveillance Republic, The Daily Star, data journalism, Bangladesh, surveillance, civil liberties, visual storytelling, investigative reporting" />
+  <title>Awami League Government Phone Spying | AL govt’s secret SURVEILLANCE STATE | Awami League Surveillance Scandal | The Daily Star</title>
+  <meta name="description" content="‘Awami League Government Phone Spying: From snooping devices carried in backpacks for locating people through their phones to a massive infrastructure that can intercept even end-to-end encryption from a central command centre, the Awami League government had been on an increasingly aggressive trajectory towards building a powerful surveillance state." />
+  <meta name="author" content="Zyma Islam, Mohammad Suman, Mahmudul Hasan, Muhammad Imran, Martin Swapan Pandey" />
+  <meta name="keywords" content="Surveillance Republic, The Daily Star, data journalism, Bangladesh, surveillance, civil liberties, visual storytelling, investigative reporting, Bangladesh government phone spying, Sheikh Hasina surveillance allegations, Bangladesh mass surveillance system, NTMC ILIS interception Bangladesh, Awami League surveillance scandal, Bangladesh privacy rights violation, IMSI catcher Bangladesh police, Lawful Telecommunication Interception Act Bangladesh, Yaana Technologies Bangladesh deal, RAB surveillance equipment Bangladesh" />
   
   <!-- Open Graph / Facebook / LinkedIn -->
-  <meta property="og:title" content="AL govt's secret surveillance state" />
-  <meta property="og:description" content="The regime spent at least Tk 1,382cr to equip NTMC, Rab, police with surveillance infrastructure from 2016-24" />
+  <meta property="og:title" content="Awami League Government Phone Spying | AL govt’s secret SURVEILLANCE STATE | Awami League Surveillance Scandal | The Daily Star" />
+  <meta property="og:description" content="Awami League Government Phone Spying: From snooping devices carried in backpacks for locating people through their phones to a massive infrastructure that can intercept even end-to-end encryption from a central command centre, the Awami League government had been on an increasingly aggressive trajectory towards building a powerful surveillance state." />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://surveillancestate.thedailystar.net/" />
   <meta property="og:image" content="https://surveillancestate.thedailystar.net/images/header.gif" />
@@ -115,8 +115,8 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="AL govt's secret surveillance state" />
-  <meta name="twitter:description" content="The regime spent at least Tk 1,382cr to equip NTMC, Rab, police with surveillance infrastructure from 2016-24." />
+  <meta name="twitter:title" content="Awami League Government Phone Spying | AL govt’s secret SURVEILLANCE STATE | Awami League Surveillance Scandal | The Daily Star" />
+  <meta name="twitter:description" content="Surveillance Republic, The Daily Star, data journalism, Bangladesh, surveillance, civil liberties, visual storytelling, investigative reporting, Bangladesh government phone spying, Sheikh Hasina surveillance allegations, Bangladesh mass surveillance system, NTMC ILIS interception Bangladesh, Awami League surveillance scandal, Bangladesh privacy rights violation, IMSI catcher Bangladesh police, Lawful Telecommunication Interception Act Bangladesh, Yaana Technologies Bangladesh deal, RAB surveillance equipment Bangladesh." />
   <meta name="twitter:image" content="https://surveillancestate.thedailystar.net/images/header.gif" />
 
 
@@ -447,7 +447,7 @@ main article.ds-body:first-of-type p:first-of-type::first-letter {
 
   <!-- Text below the scrolly -->
   <article class="ds-body">
-    <h2>Mass surveillance system</h2>
+    <h2>How the surveillance works</h2>
     <p>The Daily Star shared the list of components purchased by the NTMC with our in-house network specialists. Using information about the components, they <strong>r</strong>econstructed the ILIS network (see the operational and network structure online) as outlined by its contract.&nbsp;</p>
 
     <p>The surveillance with ILIS begins by intercepting data packets from the internet infrastructure, including undersea fibre optic cables, satellite systems, ISP routes, and telecom networks.&nbsp;</p>
