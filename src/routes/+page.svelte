@@ -492,34 +492,7 @@ main article.ds-body:first-of-type p:first-of-type::first-letter {
     <p class="qa-answer"><strong>NTMC:</strong> As said before, law enforcement agencies, investigation agencies and intelligence agencies utilise the platform to investigate cases and identify the accused. Mentioned agencies complete necessary processes at their end before collecting information.</p>
   </article>
   
-  <article class="ds-body">
-    <h2>How the surveillance works</h2>
-    <p>The Daily Star shared the list of components purchased by the NTMC with our in-house network specialists. Using information about the components, they <strong>r</strong>econstructed the ILIS network (see the operational and network structure online) as outlined by its contract.&nbsp;</p>
 
-    <p>The surveillance with ILIS begins by intercepting data packets from the internet infrastructure, including undersea fibre optic cables, satellite systems, ISP routes, and telecom networks.&nbsp;</p>
-    
-    <p>To do this, it uses three&nbsp; Copper Tap Modules (10/100/1000), which split incoming and outgoing data streams and sends them to monitoring ports. Fibre Taps mirrors high-speed fibre optic traffic and redirects it for analysis.&nbsp;</p>
-    
-    <p>These feeds are then processed by DeepProbe units, which prepare the data for inspection.</p>
-    
-    <p>The second step is the decryption of the encrypted traffic. SSL(secure sockets layer) is a way to keep data safe when it travels between a browser and a website by locking it with encryption.</p>
-    
-    <p>The ILIS uses a SSL Decryption Platform which intercepts secure connections, decrypts the traffic for inspection, then re-encrypts it before forwarding the data.</p>
-    
-    <p>Data show NTMC purchased 15 DeepProbe monitor ports from Yaana, which identifies application usage (e.g., WhatsApp, Signal), timestamps, data volumes, IP addresses, communication types, and user behaviour patterns. A GSM/Signalling Network Monitoring The Platform is also deployed to extract metadata from voice calls, SMS, and mobile internet traffic. This allows NTMC to build user profiles based on activity patterns, even without accessing message content.</p>
-    
-    <p>Its Social Media Monitoring System, purchased from Ecomtrade Holdings Pte Ltd for Tk 45.11 crore, is capable of tracking activity across platforms.&nbsp;</p>
-    
-    <p>Kamal Shakil, the manager of foreign trade at Ecomtrade, told The Daily Star that this platform was procured from a Netherlands-based supplier and that they were only the reseller.&nbsp;</p>
-    
-    <p>To store the large volume of data, NTMC acquired two DRS Hadoop Data Node Hardware units. GPS-disciplined NTP servers ensured all intercepted data was timestamped accurately and consistently across systems.</p>
-    
-    <p>All these were permitted by as many as 22 laws, including the Bangladesh Telecommunications Regulation Act, 2001, said Diya.&nbsp;&nbsp;</p>
-    
-    <p>"Bangladesh's surveillance regime is rooted in colonial-era laws that permit spyware use, communication interception, and broad law enforcement access without adequate safeguards," she said.</p>
-    
-    <p>She called it a "security-first framework" and said that it "spans not just telecom and cyber laws, but also narcotics, anti-terrorism, trade regulations, and import controls—creating a system ripe for abuse."&nbsp;</p>
-  </article>
 
   <!-- Map component -->
   <section aria-label="Surveillance locations map">
