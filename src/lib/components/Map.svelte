@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { fade, scale } from 'svelte/transition';
+  import { base } from '$app/paths'; // For SvelteKit projects
 
   export let points = [];
 
@@ -13,8 +14,6 @@
   let activePoint = null; 
   let tooltipPosition = 'top';
   
-  let customHoverTooltip;
-
   let isZoomSticky = false;
 
   // --- Generic state and data for the dynamic magnifier ---
@@ -104,20 +103,6 @@
     const baseSize = isMobile ? 5 : 15;
     const scalingFactor = isMobile ? 3000 : 700;
     return baseSize + Math.sqrt(value) / scalingFactor;
-  }
-
-  function formatCurrencyValue(value) {
-    if (value === null || typeof value === 'undefined') {
-      return '';
-    }
-    const takaSymbol = '৳';
-    if (value >= 10000000) { 
-      return `${takaSymbol} ${(value / 10000000).toFixed(2)} cr`;
-    }
-    if (value >= 100000) {
-      return `${takaSymbol} ${(value / 100000).toFixed(2)} lakh`;
-    }
-    return `${takaSymbol} ${new Intl.NumberFormat('en-IN').format(value)}`;
   }
   
   function formatNumberForList(value) {
@@ -227,7 +212,9 @@
           onAdd: function(map) {
               const container = L.DomUtil.create('div', 'leaflet-control-reset leaflet-bar');
               const button = L.DomUtil.create('a', 'leaflet-control-reset-button', container);
-              button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 15H3v4c0 1.1.9 2 2 2h4v-2H5v-4zM5 5h4V3H5c-1.1 0-2 .9-2 2v4h2V5zm14-2h-4v2h4v4h2V5c0-1.1-.9-2-2-2zm0 16h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4z"/></svg>`;
+              
+              button.innerHTML = `<img src="${base}/images/zoom_reset.svg" alt="Reset View" />`;
+              
               button.href = '#';
               button.role = 'button';
               button.title = 'Reset View';
@@ -396,10 +383,22 @@
             barrierHtml = `<div class="tooltip-barrier-notice">${point.country} bans exporting surveillance equipment to repressive regimes.</div>`;
           }
           const headerHtml = `<div class="tooltip-header"><strong>${point.country}</strong><div class="tooltip-amount">Amount: ${point.label_text.replace('Tk', '৳')}</div></div>`;
+          
+          const controlsContainer = map.getContainer().querySelector('.leaflet-control-container .leaflet-top.leaflet-left');
+          let leftPadding = 25;
+          if (controlsContainer) {
+              const controlsWidth = controlsContainer.offsetWidth;
+              const margin = 25;
+              leftPadding = controlsWidth + margin;
+          }
+          const autoPanPadding = L.point(leftPadding, 25);
+
           marker.bindPopup(`<div class="tooltip-content">${headerHtml}${exporterHtml}${importerHtml}${barrierHtml}</div>`, {
             className: 'custom-tooltip', 
             maxWidth: 300,
-            closeButton: false
+            closeButton: false,
+            autoPan: true,
+            autoPanPadding: autoPanPadding
           });
           
           marker.on('mouseover', function (e) {
@@ -417,31 +416,10 @@
             
             const companyElements = popupContent.querySelectorAll('.exporter-company');
             companyElements.forEach(el => {
-              const tooltipText = el.dataset.tooltipText;
               const baseCountry = el.dataset.baseCountry;
               const highlightColor = el.dataset.highlightColor;
-
-              if (tooltipText) {
-                el.addEventListener('mousemove', (moveEvent) => {
-                  const tooltipWidth = customHoverTooltip.offsetWidth;
-                  const tooltipHeight = customHoverTooltip.offsetHeight;
-                  const viewportWidth = window.innerWidth;
-                  const viewportHeight = window.innerHeight;
-                  const offset = 15;
-                  let x = moveEvent.clientX + offset;
-                  let y = moveEvent.clientY + offset;
-                  if (x + tooltipWidth > viewportWidth - offset) x = moveEvent.clientX - tooltipWidth - offset;
-                  if (y + tooltipHeight > viewportHeight - offset) y = moveEvent.clientY - tooltipHeight - offset;
-                  customHoverTooltip.style.left = `${x}px`;
-                  customHoverTooltip.style.top = `${y}px`;
-                });
-              }
               
               el.addEventListener('mouseover', () => {
-                if (tooltipText) {
-                  customHoverTooltip.innerHTML = tooltipText;
-                  customHoverTooltip.style.display = 'block';
-                }
                 if (baseCountry) {
                   updateMapHighlight(baseCountry, highlightColor);
                   
@@ -454,31 +432,10 @@
                 }
               });
               el.addEventListener('mouseout', () => {
-                if (tooltipText) customHoverTooltip.style.display = 'none';
                 updateMapHighlight(null, null);
                 magnifiedCountry = null;
               });
             });
-
-            if (isMobile) return;
-
-            const popup = e.popup;
-            const popupEl = popup.getElement();
-            if (!popupEl) return;
-            
-            const controlsContainer = map.getContainer().querySelector('.leaflet-control-container .leaflet-top.leaflet-left');
-            if (!controlsContainer) return;
-
-            setTimeout(() => {
-                const popupRect = popupEl.getBoundingClientRect();
-                const controlsRect = controlsContainer.getBoundingClientRect();
-                const margin = 20;
-
-                if (popupRect.left < controlsRect.right + margin) {
-                    const panByX = (controlsRect.right + margin) - popupRect.left;
-                    map.panBy([panByX, 0], { animate: true, duration: 0.25 });
-                }
-            }, 1);
           });
 
           marker.on('popupclose', () => {
@@ -528,8 +485,7 @@
 </script>
 <div class="map-wrapper" style="height: {mapHeight};" class:is-sticky={isZoomSticky}>
   <div bind:this={mapDiv} id="map" style="height: 100%; width: 100%;"></div>
-  <div bind:this={customHoverTooltip} id="custom-hover-tooltip"></div>
-
+  
   {#if magnifiedCountry}
     <div class="sticky-wrapper">
       <div 
@@ -624,7 +580,7 @@
 .magnifier-container {
   position: absolute;
   bottom: 0;
-  right: 65px;
+  right: 25px;
   width: 180px;
   height: 180px;
   pointer-events: auto;
@@ -654,19 +610,58 @@
 }
 
 
-#custom-hover-tooltip {
-position: fixed;
-display: none;
-background-color: black;
-color: white;
-padding: 8px 12px;
-border-radius: 4px;
-font-size: .85em;
-z-index: 10001;
-pointer-events: none;
-white-space: nowrap;
-box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+:global(.custom-tooltip .tooltip-list-item .item-name [data-tooltip-text]) {
+    position: relative;
 }
+
+:global(.custom-tooltip .tooltip-list-item .item-name [data-tooltip-text]::before),
+:global(.custom-tooltip .tooltip-list-item .item-name [data-tooltip-text]::after) {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: all 0.2s ease-in-out;
+}
+
+:global(.custom-tooltip .tooltip-list-item .item-name [data-tooltip-text]:hover::before),
+:global(.custom-tooltip .tooltip-list-item .item-name [data-tooltip-text]:hover::after) {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+:global(.custom-tooltip .tooltip-list-item .item-name [data-tooltip-text]::before) {
+    content: attr(data-tooltip-text);
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #ffffff;
+    color: #333;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: normal;
+    white-space: nowrap;
+    z-index: 10002;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    border: 1px solid #eee;
+}
+
+:global(.custom-tooltip .tooltip-list-item .item-name [data-tooltip-text]::after) {
+    content: '';
+    position: absolute;
+    bottom: calc(120% - 6px);
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    border-width: 0;
+    width: 12px;
+    height: 12px;
+    background-color: #ffffff;
+    z-index: 10001;
+    box-shadow: 2px 2px 4px -1px rgba(0,0,0,0.1);
+}
+
 .map-wrapper {
 position: relative;
 width: 100vw;
@@ -844,8 +839,8 @@ z-index: 1000;
 :global(.custom-tooltip .tooltip-exporters > strong) { font-size: 13px; }
 .mobile-tooltip .tooltip-importers li,
 .mobile-tooltip .tooltip-exporters li,
-:global(.custom-tooltip .tooltip-importers li),
-:global(.custom-tooltip .tooltip-exporters li),
+:global(.custom-tooltip .importers li),
+:global(.custom-tooltip .exporters li),
 .mobile-tooltip .tooltip-amount,
 :global(.custom-tooltip .tooltip-amount) { font-size: 9px; }
 }
@@ -874,10 +869,10 @@ transition: background-color 0.16s ease-out;
 :global(.leaflet-control-reset-button:hover) {
 background-color: #f4f4f4 !important;
 }
-:global(.leaflet-control-reset-button svg) {
-width: 18px;
-height: 18px;
-fill: currentColor;
+/* This rule now styles the <img> tag inside the reset button */
+:global(.leaflet-control-reset-button img) {
+  width: 18px;
+  height: 18px;
 }
 
 @media (min-width: 601px) {
