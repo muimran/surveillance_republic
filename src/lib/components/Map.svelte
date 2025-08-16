@@ -17,6 +17,17 @@
 
   let isZoomSticky = false;
 
+  // --- Generic state and data for the dynamic magnifier ---
+  let magnifiedCountry = null; // Will hold { name, feature, code } of the hovered country
+  let magnifierContainer;
+  let magnifierMap = null;
+  const countryFeaturesMap = new Map(); // Stores all country GeoJSON features for quick lookup
+
+  const COUNTRY_NAME_TO_CODE_MAP = {
+    'Singapore': 'sg', 'United States of America': 'us', 'United Kingdom': 'gb', 'Canada': 'ca', 'France': 'fr', 'Germany': 'de', 'Italy': 'it', 'Spain': 'es', 'Australia': 'au', 'China': 'cn', 'Japan': 'jp', 'India': 'in', 'Brazil': 'br', 'Russian Federation': 'ru', 'Switzerland': 'ch', 'Netherlands': 'nl', 'Sweden': 'se', 'Norway': 'no', 'Denmark': 'dk', 'Finland': 'fi', 'Ireland': 'ie', 'Belgium': 'be', 'Austria': 'at', 'Portugal': 'pt', 'Greece': 'gr', 'Turkey': 'tr', 'Israel': 'il', 'United Arab Emirates': 'ae', 'Saudi Arabia': 'sa', 'South Africa': 'za', 'South Korea': 'kr', 'New Zealand': 'nz', 'Argentina': 'ar', 'Mexico': 'mx', 'Cyprus': 'cy', 'Czechia': 'cz', 'Bulgaria': 'bg', 'Malaysia': 'my', 'Philippines': 'ph', 'Poland': 'pl', 'Taiwan': 'tw',
+    'USA': 'us', 'UK': 'gb', 'Czech Republic': 'cz'
+  };
+
   let isMobile = false;
   if (typeof window !== 'undefined') {
     isMobile = window.innerWidth < 600;
@@ -29,6 +40,65 @@
   let minZoom = isMobile ? 0.5 : 2.5;
 
   let wheelZoomTimeout;
+
+  // --- Svelte reactive statement handles ANY country with automatic zoom and positioning ---
+  $: if (typeof window !== 'undefined' && window.L) {
+    if (magnifiedCountry && magnifierContainer && !magnifierMap) {
+      magnifierMap = L.map(magnifierContainer, {
+        zoomControl: false, dragging: false, touchZoom: false, scrollWheelZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: false, tap: false, attributionControl: false
+      });
+      
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png').addTo(magnifierMap);
+
+      let featureToDisplay = magnifiedCountry.feature;
+
+      if (magnifiedCountry.name === 'United States of America' && magnifiedCountry.feature.geometry.type === 'MultiPolygon') {
+        let mainLandPolygon = null;
+        let maxPoints = 0;
+        for (const polygon of magnifiedCountry.feature.geometry.coordinates) {
+          const pointCount = polygon[0].length;
+          if (pointCount > maxPoints) {
+            maxPoints = pointCount;
+            mainLandPolygon = polygon;
+          }
+        }
+        if (mainLandPolygon) {
+          featureToDisplay = {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'Polygon',
+              coordinates: mainLandPolygon,
+            },
+          };
+        }
+      }
+      
+      const countryLayer = L.geoJSON(featureToDisplay);
+      const bounds = countryLayer.getBounds();
+
+      magnifierMap.fitBounds(bounds, { padding: [20, 20], animate: false });
+
+      const zoom = magnifierMap.getZoom();
+      const initialCenter = magnifierMap.getCenter();
+      const centerPoint = magnifierMap.latLngToContainerPoint(initialCenter);
+      const yShift = magnifierContainer.clientHeight * 0.15;
+      centerPoint.y -= yShift;
+      const newCenter = magnifierMap.containerPointToLatLng(centerPoint);
+      magnifierMap.setView(newCenter, zoom, { animate: false });
+
+
+      L.geoJSON(featureToDisplay, {
+        style: {
+          fillColor: '#c00007', fillOpacity: 0.9, color: '#333333', weight: 2
+        }
+      }).addTo(magnifierMap);
+
+    } else if (!magnifiedCountry && magnifierMap) {
+      magnifierMap.remove();
+      magnifierMap = null;
+    }
+  }
 
   function valueToPixelSize(value) {
     const baseSize = isMobile ? 5 : 15;
@@ -124,7 +194,7 @@
     stickyObserver = new IntersectionObserver((entries) => {
         const entry = entries[0];
         const stickyTopPosition = 20;
-        const controlHeight = 150; // Increased to account for reset button
+        const controlHeight = 150;
         
         isZoomSticky = 
           entry.isIntersecting &&
@@ -135,20 +205,18 @@
         threshold: Array.from({ length: 101 }, (_, i) => i / 100)
     });
 
-
     import('leaflet').then(L => {
       window.L = L;
       map = L.map(mapDiv, {
         scrollWheelZoom: false,
         touchZoom: isMobile,
         doubleClickZoom: true,
-        zoomControl: true, // Keep this true, we will style it
+        zoomControl: true,
         minZoom: minZoom,
         maxBounds: [ [-70, -170], [80, 170] ],
         maxBoundsViscosity: 1.0
       }).setView([initialLat, initialLng], initialZoom);
 
-      // --- NEW: Custom Reset View Control ---
       function resetMapView() {
         if (map) {
           map.flyTo([initialLat, initialLng], initialZoom);
@@ -169,13 +237,10 @@
               
               return container;
           },
-          onRemove: function(map) {
-              // Cleanup if needed
-          }
+          onRemove: function(map) {}
       });
 
       new L.Control.ResetView({ position: 'topleft' }).addTo(map);
-      // --- END NEW ---
 
       if (!isMobile) {
         wheelHandler = (event) => {
@@ -222,25 +287,13 @@
 
       function updateMapHighlight(highlightedCountry = null, highlightColor = null) {
         if (countriesLayer) {
-          const highlightStyle = { 
-            fillColor: highlightColor || '#FEEFB3', 
-            fillOpacity: 0.9, 
-            color: '#333333', 
-            weight: 2 
-          };
           const dimStyle = { fillColor: '#dcdcdc', fillOpacity: 0.5, color: '#aaaaaa', weight: 1 };
 
-          countriesLayer.eachLayer(layer => {
-            if (highlightedCountry) {
-              const countryName = layer.feature.properties.ADMIN;
-              const isMatch = (countryName === highlightedCountry) || 
-                              (countryAliasMap[countryName] === highlightedCountry) || 
-                              (Object.keys(countryAliasMap).find(key => countryAliasMap[key] === highlightedCountry) === countryName);
-              layer.setStyle(isMatch ? highlightStyle : dimStyle);
-            } else {
-              countriesLayer.setStyle(getCountryStyle);
-            }
-          });
+          if (highlightedCountry) {
+            countriesLayer.setStyle(dimStyle);
+          } else {
+            countriesLayer.setStyle(getCountryStyle);
+          }
         }
         
         if (markersLayer) {
@@ -263,10 +316,17 @@
       fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson')
         .then(response => response.json())
         .then(data => { 
+          data.features.forEach(feature => {
+            const countryName = feature.properties.ADMIN;
+            countryFeaturesMap.set(countryName, feature);
+          });
+
           countriesLayer = L.geoJSON(data, { 
             style: getCountryStyle,
             interactive: true,
-            onEachFeature: (feature, layer) => { layer.options.className = 'country-polygon'; }
+            onEachFeature: (feature, layer) => { 
+              layer.options.className = 'country-polygon';
+            }
           }).addTo(map); 
         });
 
@@ -384,13 +444,45 @@
                 }
                 if (baseCountry) {
                   updateMapHighlight(baseCountry, highlightColor);
+                  
+                  const feature = countryFeaturesMap.get(baseCountry);
+                  const code = COUNTRY_NAME_TO_CODE_MAP[baseCountry];
+
+                  if (feature && code) {
+                    magnifiedCountry = { name: baseCountry, feature, code };
+                  }
                 }
               });
               el.addEventListener('mouseout', () => {
                 if (tooltipText) customHoverTooltip.style.display = 'none';
                 updateMapHighlight(null, null);
+                magnifiedCountry = null;
               });
             });
+
+            if (isMobile) return;
+
+            const popup = e.popup;
+            const popupEl = popup.getElement();
+            if (!popupEl) return;
+            
+            const controlsContainer = map.getContainer().querySelector('.leaflet-control-container .leaflet-top.leaflet-left');
+            if (!controlsContainer) return;
+
+            setTimeout(() => {
+                const popupRect = popupEl.getBoundingClientRect();
+                const controlsRect = controlsContainer.getBoundingClientRect();
+                const margin = 20;
+
+                if (popupRect.left < controlsRect.right + margin) {
+                    const panByX = (controlsRect.right + margin) - popupRect.left;
+                    map.panBy([panByX, 0], { animate: true, duration: 0.25 });
+                }
+            }, 1);
+          });
+
+          marker.on('popupclose', () => {
+            magnifiedCountry = null;
           });
         }
         return marker;
@@ -427,351 +519,401 @@
         mapDiv.removeEventListener('wheel', wheelHandler);
       }
       clearTimeout(wheelZoomTimeout);
+      if (magnifierMap) {
+        magnifierMap.remove();
+        magnifierMap = null;
+      }
     };
   });
 </script>
-
 <div class="map-wrapper" style="height: {mapHeight};" class:is-sticky={isZoomSticky}>
   <div bind:this={mapDiv} id="map" style="height: 100%; width: 100%;"></div>
   <div bind:this={customHoverTooltip} id="custom-hover-tooltip"></div>
-{#if activePoint && isMobile}
-<div
-class="mobile-tooltip"
-class:position-top={tooltipPosition === 'top'}
-class:position-bottom={tooltipPosition === 'bottom'}
-in:scale={{ duration: 150, start: 0.95, easing: (t) => t * (2 - t) }}
-out:fade={{ duration: 100 }}
->
-<div class="tooltip-content">
-<div class="tooltip-header">
-<strong>{activePoint.country}</strong>
-<div class="tooltip-amount">Amount: {activePoint.label_text.replace('Tk', '৳')}</div>
-</div>
 
-{#if activePoint.exporter_companies && activePoint.exporter_companies.length > 0}
-      <div class="tooltip-exporters">
-        <strong>Notable Exporters:</strong>
-        <ul>
-          {#each [...activePoint.exporter_companies].sort((a,b) => b.export_value - a.export_value) as exporter, i}
-            {@const formattedValue = formatNumberForList(exporter.export_value)}
-            <li class="tooltip-list-item" in:fade={{ duration: 250, delay: 50 + i * 50 }}>
-              <span class="item-name">
-                {#if exporter.base_country && exporter.base_country !== activePoint.country}
-                  <strong style="color: #c00007;">{exporter.exporter_company}</strong>
-                {:else}
-                  <strong style="color: #0056b3;">{exporter.exporter_company}</strong>
-                {/if}
-                {#if exporter.base_country}
-                  <span style="font-size: 10px; color: #555; font-style: italic;"> (based in {exporter.base_country})</span>
-                {/if}
-              </span>
-              {#if formattedValue}
-                <span class="item-value"><strong>{formattedValue}</strong></span>
-              {/if}
-            </li>
-          {/each}
-        </ul>
+  {#if magnifiedCountry}
+    <div class="sticky-wrapper">
+      <div 
+        bind:this={magnifierContainer}
+        class="magnifier-container"
+        transition:scale={{ duration: 200, start: 0.8 }}
+      >
+        <div class="magnifier-flag-container">
+          <img 
+            src={`https://flagcdn.com/w80/${magnifiedCountry.code}.png`} 
+            alt={`${magnifiedCountry.name} Flag`} 
+          />
+        </div>
       </div>
-    {/if}
-
-    <div class="tooltip-importers">
-      <strong>{activePoint.importers.length > 1 ? 'Importer Agencies' : 'Importer Agency'}:</strong>
-      <ul>
-        {#each [...activePoint.importers].sort((a,b) => b.import_value - a.import_value) as importer, i}
-          {@const formattedValue = formatNumberForList(importer.import_value)}
-          <li class="tooltip-list-item" in:fade={{ duration: 250, delay: 50 + (activePoint.exporter_companies.length + i) * 50 }}>
-            <span class="item-name"><strong>{importer.importer_agency}</strong></span>
-            {#if formattedValue}
-              <span class="item-value"><strong>{formattedValue}</strong></span>
-            {/if}
-          </li>
-        {/each}
-      </ul>
     </div>
+  {/if}
 
-    {#if activePoint.export_barriers === 'Y'}
-      <div class="tooltip-barrier-notice">
-        {activePoint.country} prohibits export of surveillance equipment to repressive regimes.
-      </div>
-    {/if}
+  {#if activePoint && isMobile}
+  <div
+  class="mobile-tooltip"
+  class:position-top={tooltipPosition === 'top'}
+  class:position-bottom={tooltipPosition === 'bottom'}
+  in:scale={{ duration: 150, start: 0.95, easing: (t) => t * (2 - t) }}
+  out:fade={{ duration: 100 }}
+  >
+  <div class="tooltip-content">
+  <div class="tooltip-header">
+  <strong>{activePoint.country}</strong>
+  <div class="tooltip-amount">Amount: {activePoint.label_text.replace('Tk', '৳')}</div>
   </div>
-</div>
-{/if}
+  {#if activePoint.exporter_companies && activePoint.exporter_companies.length > 0}
+  <div class="tooltip-exporters">
+  <strong>Notable Exporters:</strong>
+  <ul>
+  {#each [...activePoint.exporter_companies].sort((a,b) => b.export_value - a.export_value) as exporter, i}
+  {@const formattedValue = formatNumberForList(exporter.export_value)}
+  <li class="tooltip-list-item" in:fade={{ duration: 250, delay: 50 + i * 50 }}>
+  <span class="item-name">
+  {#if exporter.base_country && exporter.base_country !== activePoint.country}
+  <strong style="color: #c00007;">{exporter.exporter_company}</strong>
+  {:else}
+  <strong style="color: #0056b3;">{exporter.exporter_company}</strong>
+  {/if}
+  </span>
+  {#if formattedValue}
+  <span class="item-value"><strong>{formattedValue}</strong></span>
+  {/if}
+  </li>
+  {/each}
+  </ul>
+  </div>
+  {/if}
+  <div class="tooltip-importers">
+    <strong>{activePoint.importers.length > 1 ? 'Importer Agencies' : 'Importer Agency'}:</strong>
+    <ul>
+      {#each [...activePoint.importers].sort((a,b) => b.import_value - a.import_value) as importer, i}
+        {@const formattedValue = formatNumberForList(importer.import_value)}
+        <li class="tooltip-list-item" in:fade={{ duration: 250, delay: 50 + (activePoint.exporter_companies.length + i) * 50 }}>
+          <span class="item-name"><strong>{importer.importer_agency}</strong></span>
+          {#if formattedValue}
+            <span class="item-value"><strong>{formattedValue}</strong></span>
+          {/if}
+        </li>
+      {/each}
+    </ul>
+  </div>
 
+  {#if activePoint.export_barriers === 'Y'}
+    <div class="tooltip-barrier-notice">
+      {activePoint.country} prohibits export of surveillance equipment to repressive regimes.
+    </div>
+  {/if}
+    </div>
+  </div>
+  {/if}
 </div>
 <style>
   :global(.country-polygon) {
     cursor: default !important;
   }
+@keyframes subtle-pop-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes fade-in-item { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-  @keyframes subtle-pop-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-  @keyframes fade-in-item { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+.sticky-wrapper {
+  position: sticky;
+  bottom: 100px;
+  height: 0;
+  z-index: 1002;
+  pointer-events: none;
+}
 
-  #custom-hover-tooltip {
-    position: fixed;
-    display: none;
-    background-color: black;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: .85em;
-    z-index: 10001;
-    pointer-events: none;
-    white-space: nowrap;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-  }
-  .map-wrapper {
-    position: relative;
-    width: 100vw;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
-  }
-  #map { 
-    touch-action: pan-x pan-y; 
-  }
-  :global(.leaflet-marker-icon.with-animation > div) {
-    animation: grow-shrink 1.5s ease forwards;
-  }
-  @keyframes grow-shrink {
-    0% { transform: scale(0); opacity: 0; }
-    50% { transform: scale(1.2); opacity: 0.6; }
-    100% { transform: scale(1); opacity: 0.6; }
-  }
-  .mobile-tooltip {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 300px;
-    padding-top: 56px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    padding-left: 15px;
-    padding-right: 15px;
-    padding-bottom: 12px;
-    z-index: 1001;
-  }
-  .mobile-tooltip.position-top { top: 15px; bottom: auto; }
-  .mobile-tooltip.position-bottom { bottom: 15px; top: auto; }
-  
-  .mobile-tooltip .tooltip-header {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 56px;
-    background: #000;
-    color: #fff;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    padding: 0 15px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  .mobile-tooltip .tooltip-header > strong { font-size: 18px; }
-  
-  :global(.custom-tooltip .tooltip-amount) { border-bottom: 1.5px solid #444; }
-  
-  .mobile-tooltip .tooltip-importers,
-  .mobile-tooltip .tooltip-exporters { word-wrap: break-word; }
+.magnifier-container {
+  position: absolute;
+  bottom: 0;
+  right: 65px;
+  width: 180px;
+  height: 180px;
+  pointer-events: auto;
+  border-radius: 50%;
+  border: 4px solid #6c757d;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  overflow: hidden;
+  background-color: #e9ecef;
+}
 
-  .mobile-tooltip .tooltip-exporters {
-    margin-top: 16px;
-  }
-  
-  .mobile-tooltip .tooltip-importers > strong,
-  .mobile-tooltip .tooltip-exporters > strong {
-    font-size: 14px;
-    font-weight: bold;
-    color: black;
-  }
-  .mobile-tooltip .tooltip-importers ul,
-  .mobile-tooltip .tooltip-exporters ul {
-    list-style-type: none;
-    padding-left: 0;
-    margin-top: 4px;
-    margin-bottom: 0;
-  }
-  
-  :global(.custom-tooltip .leaflet-popup-content-wrapper) {
-    background-color: #ffffff !important;
-    color: black !important;
-    border-radius: 8px;
-    padding: 10px;
-    font-size: 14px;
-    width: auto;
-    animation: subtle-pop-in 150ms ease-out;
-  }
-  :global(.custom-tooltip .leaflet-popup-content) { margin: 0; line-height: 1.5; }
-  :global(.custom-tooltip .leaflet-popup-tip) { background-color: #ffffff !important; }
-  :global(.custom-tooltip .tooltip-header) {
-    background: black;
-    color: white;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    margin: -10px -10px 8px -10px;
-    padding: 10px 10px 0 10px;
-  }
-  :global(.custom-tooltip .tooltip-header > strong) { font-size: 18px; }
-  
-  :global(.custom-tooltip .tooltip-importers),
-  :global(.custom-tooltip .tooltip-exporters) { word-wrap: break-word; }
-  
-  :global(.custom-tooltip .tooltip-importers > strong),
-  :global(.custom-tooltip .tooltip-exporters > strong) {
-    font-weight: bold;
-    color: black;
-  }
-  :global(.custom-tooltip .tooltip-importers ul),
-  :global(.custom-tooltip .tooltip-exporters ul) {
-    list-style-type: none;
-    padding-left: 0;
-    margin-top: 4px;
-    margin-bottom: 0;
-  }
+.magnifier-flag-container {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 54px;
+  height: 36px;
+  z-index: 1003; 
+}
 
-  .mobile-tooltip .tooltip-importers,
-  :global(.custom-tooltip .tooltip-importers) { margin-top: 16px; }
+.magnifier-flag-container img {
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  border: 1px solid #fff;
+}
 
-  .mobile-tooltip .tooltip-barrier-notice,
-  :global(.custom-tooltip .tooltip-barrier-notice) {
-    color: #c00007;
-    font-size: 12px;
-    font-style: italic;
-    margin-top: 16px; 
-    padding-top: 12px; 
-    border-top: 1px solid #eee;
-    line-height: 1.4;
-  }
 
-  .mobile-tooltip .tooltip-importers li,
-  .mobile-tooltip .tooltip-exporters li,
-  :global(.custom-tooltip .tooltip-importers li),
-  :global(.custom-tooltip .tooltip-exporters li),
-  :global(.custom-tooltip .tooltip-amount) {
-    line-height: 1.4; 
-    padding-bottom: 4px; 
-    font-size: 11.5px; 
-  }
-  
-  .mobile-tooltip .tooltip-list-item,
-  :global(.custom-tooltip .tooltip-list-item) {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 1em;
-  }
-  
-  :global(.custom-tooltip .tooltip-list-item) {
-    opacity: 0;
-    animation: fade-in-item 300ms ease-out forwards;
-  }
+#custom-hover-tooltip {
+position: fixed;
+display: none;
+background-color: black;
+color: white;
+padding: 8px 12px;
+border-radius: 4px;
+font-size: .85em;
+z-index: 10001;
+pointer-events: none;
+white-space: nowrap;
+box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+.map-wrapper {
+position: relative;
+width: 100vw;
+left: 50%;
+right: 50%;
+margin-left: -50vw;
+margin-right: -50vw;
+}
+#map {
+touch-action: pan-x pan-y;
+}
+:global(.leaflet-marker-icon.with-animation > div) {
+animation: grow-shrink 1.5s ease forwards;
+}
+@keyframes grow-shrink {
+0% { transform: scale(0); opacity: 0; }
+50% { transform: scale(1.2); opacity: 0.6; }
+100% { transform: scale(1); opacity: 0.6; }
+}
+.mobile-tooltip {
+position: absolute;
+left: 50%;
+transform: translateX(-50%);
+width: 90%;
+max-width: 300px;
+padding-top: 56px;
+background: #fff;
+border-radius: 8px;
+box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+padding-left: 15px;
+padding-right: 15px;
+padding-bottom: 12px;
+z-index: 1001;
+}
+.mobile-tooltip.position-top { top: 15px; bottom: auto; }
+.mobile-tooltip.position-bottom { bottom: 15px; top: auto; }
 
-  .mobile-tooltip .item-name,
-  :global(.custom-tooltip .item-name) { flex-grow: 1; text-align: left; color: #333; }
-  .mobile-tooltip .item-value,
-  :global(.custom-tooltip .item-value) { flex-shrink: 0; text-align: right; font-family: 'Menlo', 'Consolas', 'Monaco', monospace; }
-  
-  :global(.leaflet-marker-icon.fixed-marker) { display: flex; justify-content: center; align-items: center; }
-  :global(.leaflet-marker-icon.fixed-marker > div) { transition: all 0.3s ease-in-out; }
-  :global(.leaflet-marker-icon.marker-hover > div) {
-    box-shadow: 0 0 15px 5px rgba(230, 57, 70, 0.7);
-    transform: scale(1.1);
-    z-index: 1000;
-  }
+.mobile-tooltip .tooltip-header {
+position: absolute;
+top: 0; left: 0; right: 0;
+height: 56px;
+background: #000;
+color: #fff;
+border-top-left-radius: 8px;
+border-top-right-radius: 8px;
+padding: 0 15px;
+box-sizing: border-box;
+display: flex;
+flex-direction: column;
+justify-content: center;
+}
+.mobile-tooltip .tooltip-header > strong { font-size: 18px; }
 
-  @media (max-width: 600px) {
-    .mobile-tooltip .tooltip-content,
-    :global(.custom-tooltip .leaflet-popup-content) { max-height: 300px; overflow-y: auto; }
-    .mobile-tooltip,
-    :global(.custom-tooltip .leaflet-popup-content-wrapper) { font-size: 12px; }
-    .mobile-tooltip .tooltip-header > strong,
-    :global(.custom-tooltip .tooltip-header > strong) { font-size: 14px; }
-    .mobile-tooltip .tooltip-amount { border-bottom: none; }
-    .mobile-tooltip .tooltip-importers > strong,
-    .mobile-tooltip .tooltip-exporters > strong,
-    :global(.custom-tooltip .tooltip-importers > strong),
-    :global(.custom-tooltip .tooltip-exporters > strong) { font-size: 13px; }
-    .mobile-tooltip .tooltip-importers li,
-    .mobile-tooltip .tooltip-exporters li,
-    :global(.custom-tooltip .tooltip-importers li),
-    :global(.custom-tooltip .tooltip-exporters li),
-    .mobile-tooltip .tooltip-amount,
-    :global(.custom-tooltip .tooltip-amount) { font-size: 9px; }
-  }
+:global(.custom-tooltip .tooltip-amount) { border-bottom: 1.5px solid #444; }
 
-  :global(.leaflet-bar) { border: none !important; background: #ffffff !important; box-shadow: 0 1px 5px rgba(0,0,0,0.4) !important; border-radius: 8px !important; }
-  :global(.leaflet-control-zoom a) { width: 30px !important; height: 30px !important; line-height: 30px !important; background: transparent !important; color: #333333 !important; font-size: 22px !important; font-weight: normal !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; text-shadow: none !important; transition: background-color 0.16s ease-out; }
-  :global(.leaflet-control-zoom-in) { border-top-left-radius: 8px !important; border-top-right-radius: 8px !important; border-bottom: 1px solid #cccccc !important; }
-  :global(.leaflet-control-zoom-out) { margin-top: 0 !important; border-bottom-left-radius: 8px !important; border-bottom-right-radius: 8px !important; }
-  :global(.leaflet-control-zoom a:hover) { background-color: #f4f4f4 !important; transform: none; }
-  
-  /* --- NEW: Base styles for the reset button --- */
-  :global(.leaflet-control-reset) {
-    margin-top: 10px;
-  }
-  :global(.leaflet-control-reset-button) {
-    display: flex !important;
-    justify-content: center;
-    align-items: center;
-    width: 30px !important; 
-    height: 30px !important;
-    background-color: #ffffff;
-    border-radius: 8px !important;
-    cursor: pointer;
-    color: #333333 !important;
-    transition: background-color 0.16s ease-out;
-  }
-  :global(.leaflet-control-reset-button:hover) {
-    background-color: #f4f4f4 !important;
-  }
-  :global(.leaflet-control-reset-button svg) {
-    width: 18px;
-    height: 18px;
-    fill: currentColor;
-  }
-  /* --- END NEW --- */
+.mobile-tooltip .tooltip-importers,
+.mobile-tooltip .tooltip-exporters { word-wrap: break-word; }
 
-  /* --- DESKTOP ZOOM & RESET CONTROL STYLES --- */
-  @media (min-width: 601px) {
-    :global(.leaflet-control-zoom),
-    :global(.leaflet-control-reset) {
-      left: 25px; 
-      z-index: 1001; 
-    }
-    
-    .map-wrapper.is-sticky :global(.leaflet-control-zoom),
-    .map-wrapper.is-sticky :global(.leaflet-control-reset) {
-      position: fixed !important;
-    }
+.mobile-tooltip .tooltip-exporters {
+margin-top: 16px;
+}
 
-    .map-wrapper.is-sticky :global(.leaflet-control-zoom) {
-      top: 20px;
-    }
-    
-    .map-wrapper.is-sticky :global(.leaflet-control-reset) {
-      /* Position below the zoom control (20px top + 72px zoom height + 10px margin) */
-      top: 102px;
-    }
-    
-    :global(.leaflet-control-zoom.leaflet-bar),
-    :global(.leaflet-control-reset.leaflet-bar) {
-      border: 2px solid #e63946 !important;
-    }
+.mobile-tooltip .tooltip-importers > strong,
+.mobile-tooltip .tooltip-exporters > strong {
+font-size: 14px;
+font-weight: bold;
+color: black;
+}
+.mobile-tooltip .tooltip-importers ul,
+.mobile-tooltip .tooltip-exporters ul {
+list-style-type: none;
+padding-left: 0;
+margin-top: 4px;
+margin-bottom: 0;
+}
 
-    :global(.leaflet-control-zoom a) {
-      width: 35px !important;
-      height: 35px !important;
-      line-height: 35px !important;
-    }
+:global(.custom-tooltip .leaflet-popup-content-wrapper) {
+background-color: #ffffff !important;
+color: black !important;
+border-radius: 8px;
+padding: 10px;
+font-size: 14px;
+width: auto;
+animation: subtle-pop-in 150ms ease-out;
+}
+:global(.custom-tooltip .leaflet-popup-content) { margin: 0; line-height: 1.5; }
+:global(.custom-tooltip .leaflet-popup-tip) { background-color: #ffffff !important; }
+:global(.custom-tooltip .tooltip-header) {
+background: black;
+color: white;
+border-top-left-radius: 8px;
+border-top-right-radius: 8px;
+margin: -10px -10px 8px -10px;
+padding: 10px 10px 0 10px;
+}
+:global(.custom-tooltip .tooltip-header > strong) { font-size: 18px; }
 
-    /* --- NEW: Desktop size for reset button --- */
-    :global(.leaflet-control-reset-button) {
-      width: 35px !important;
-      height: 35px !important;
-    }
-  }
+:global(.custom-tooltip .tooltip-importers),
+:global(.custom-tooltip .tooltip-exporters) { word-wrap: break-word; }
+
+:global(.custom-tooltip .tooltip-importers > strong),
+:global(.custom-tooltip .tooltip-exporters > strong) {
+font-weight: bold;
+color: black;
+}
+:global(.custom-tooltip .tooltip-importers ul),
+:global(.custom-tooltip .tooltip-exporters ul) {
+list-style-type: none;
+padding-left: 0;
+margin-top: 4px;
+margin-bottom: 0;
+}
+
+.mobile-tooltip .tooltip-importers,
+:global(.custom-tooltip .tooltip-importers) { margin-top: 16px; }
+
+.mobile-tooltip .tooltip-barrier-notice,
+:global(.custom-tooltip .tooltip-barrier-notice) {
+color: #c00007;
+font-size: 12px;
+font-style: italic;
+margin-top: 16px;
+padding-top: 12px;
+border-top: 1px solid #eee;
+line-height: 1.4;
+}
+
+.mobile-tooltip .tooltip-importers li,
+.mobile-tooltip .tooltip-exporters li,
+:global(.custom-tooltip .tooltip-importers li),
+:global(.custom-tooltip .tooltip-exporters li),
+:global(.custom-tooltip .tooltip-amount) {
+line-height: 1.4;
+padding-bottom: 4px;
+font-size: 11.5px;
+}
+
+.mobile-tooltip .tooltip-list-item,
+:global(.custom-tooltip .tooltip-list-item) {
+display: flex;
+justify-content: space-between;
+align-items: baseline;
+gap: 1em;
+}
+
+:global(.custom-tooltip .tooltip-list-item) {
+opacity: 0;
+animation: fade-in-item 300ms ease-out forwards;
+}
+
+.mobile-tooltip .item-name,
+:global(.custom-tooltip .item-name) { flex-grow: 1; text-align: left; color: #333; }
+.mobile-tooltip .item-value,
+:global(.custom-tooltip .item-value) { flex-shrink: 0; text-align: right; font-family: 'Menlo', 'Consolas', 'Monaco', monospace; }
+
+:global(.leaflet-marker-icon.fixed-marker) { display: flex; justify-content: center; align-items: center; }
+:global(.leaflet-marker-icon.fixed-marker > div) { transition: all 0.3s ease-in-out; }
+:global(.leaflet-marker-icon.marker-hover > div) {
+box-shadow: 0 0 15px 5px rgba(230, 57, 70, 0.7);
+transform: scale(1.1);
+z-index: 1000;
+}
+
+@media (max-width: 600px) {
+.mobile-tooltip .tooltip-content,
+:global(.custom-tooltip .leaflet-popup-content) { max-height: 300px; overflow-y: auto; }
+.mobile-tooltip,
+:global(.custom-tooltip .leaflet-popup-content-wrapper) { font-size: 12px; }
+.mobile-tooltip .tooltip-header > strong,
+:global(.custom-tooltip .tooltip-header > strong) { font-size: 14px; }
+.mobile-tooltip .tooltip-amount { border-bottom: none; }
+.mobile-tooltip .tooltip-importers > strong,
+.mobile-tooltip .tooltip-exporters > strong,
+:global(.custom-tooltip .tooltip-importers > strong),
+:global(.custom-tooltip .tooltip-exporters > strong) { font-size: 13px; }
+.mobile-tooltip .tooltip-importers li,
+.mobile-tooltip .tooltip-exporters li,
+:global(.custom-tooltip .tooltip-importers li),
+:global(.custom-tooltip .tooltip-exporters li),
+.mobile-tooltip .tooltip-amount,
+:global(.custom-tooltip .tooltip-amount) { font-size: 9px; }
+}
+
+:global(.leaflet-bar) { border: none !important; background: #ffffff !important; box-shadow: 0 1px 5px rgba(0,0,0,0.4) !important; border-radius: 8px !important; }
+:global(.leaflet-control-zoom a) { width: 30px !important; height: 30px !important; line-height: 30px !important; background: transparent !important; color: #333333 !important; font-size: 22px !important; font-weight: normal !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; text-shadow: none !important; transition: background-color 0.16s ease-out; }
+:global(.leaflet-control-zoom-in) { border-top-left-radius: 8px !important; border-top-right-radius: 8px !important; border-bottom: 1px solid #cccccc !important; }
+:global(.leaflet-control-zoom-out) { margin-top: 0 !important; border-bottom-left-radius: 8px !important; border-bottom-right-radius: 8px !important; }
+:global(.leaflet-control-zoom a:hover) { background-color: #f4f4f4 !important; transform: none; }
+
+:global(.leaflet-control-reset) {
+margin-top: 10px;
+}
+:global(.leaflet-control-reset-button) {
+display: flex !important;
+justify-content: center;
+align-items: center;
+width: 30px !important;
+height: 30px !important;
+background-color: #ffffff;
+border-radius: 8px !important;
+cursor: pointer;
+color: #333333 !important;
+transition: background-color 0.16s ease-out;
+}
+:global(.leaflet-control-reset-button:hover) {
+background-color: #f4f4f4 !important;
+}
+:global(.leaflet-control-reset-button svg) {
+width: 18px;
+height: 18px;
+fill: currentColor;
+}
+
+@media (min-width: 601px) {
+:global(.leaflet-control-zoom),
+:global(.leaflet-control-reset) {
+left: 25px;
+z-index: 1001;
+}
+
+.map-wrapper.is-sticky :global(.leaflet-control-zoom),
+.map-wrapper.is-sticky :global(.leaflet-control-reset) {
+  position: fixed !important;
+}
+
+.map-wrapper.is-sticky :global(.leaflet-control-zoom) {
+  top: 20px;
+}
+
+.map-wrapper.is-sticky :global(.leaflet-control-reset) {
+  top: 102px;
+}
+
+:global(.leaflet-control-zoom.leaflet-bar),
+:global(.leaflet-control-reset.leaflet-bar) {
+  border: 2px solid #e63946 !important;
+}
+
+:global(.leaflet-control-zoom a) {
+  width: 35px !important;
+  height: 35px !important;
+  line-height: 35px !important;
+}
+
+:global(.leaflet-control-reset-button) {
+  width: 35px !important;
+  height: 35px !important;
+}
+}
 </style>
