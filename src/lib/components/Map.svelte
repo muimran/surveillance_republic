@@ -395,7 +395,8 @@
 
           marker.bindPopup(`<div class="tooltip-content">${headerHtml}${exporterHtml}${importerHtml}${barrierHtml}</div>`, {
             className: 'custom-tooltip', 
-            maxWidth: 300,
+            minWidth: 300, 
+            maxWidth: 300, 
             closeButton: false,
             autoPan: true,
             autoPanPadding: autoPanPadding
@@ -799,6 +800,12 @@ padding-bottom: 4px;
 font-size: 11.5px;
 }
 
+/* <-- NEW: Apply monospace font to the main amount in the header */
+.mobile-tooltip .tooltip-amount,
+:global(.custom-tooltip .tooltip-amount) {
+  font-family: 'Menlo', 'Consolas', 'Monaco', monospace;
+}
+
 .mobile-tooltip .tooltip-list-item,
 :global(.custom-tooltip .tooltip-list-item) {
 display: flex;
@@ -814,8 +821,14 @@ animation: fade-in-item 300ms ease-out forwards;
 
 .mobile-tooltip .item-name,
 :global(.custom-tooltip .item-name) { flex-grow: 1; text-align: left; color: #333; }
+
 .mobile-tooltip .item-value,
-:global(.custom-tooltip .item-value) { flex-shrink: 0; text-align: right; font-family: 'Menlo', 'Consolas', 'Monaco', monospace; }
+:global(.custom-tooltip .item-value) { 
+  flex-shrink: 0; 
+  text-align: right; 
+  font-family: 'Menlo', 'Consolas', 'Monaco', monospace;
+  font-size: 10.5px;
+}
 
 :global(.leaflet-marker-icon.fixed-marker) { display: flex; justify-content: center; align-items: center; }
 :global(.leaflet-marker-icon.fixed-marker > div) { transition: all 0.3s ease-in-out; }
@@ -839,8 +852,8 @@ z-index: 1000;
 :global(.custom-tooltip .tooltip-exporters > strong) { font-size: 13px; }
 .mobile-tooltip .tooltip-importers li,
 .mobile-tooltip .tooltip-exporters li,
-:global(.custom-tooltip .importers li),
-:global(.custom-tooltip .exporters li),
+:global(.custom-tooltip .tooltip-importers li),
+:global(.custom-tooltip .tooltip-exporters li),
 .mobile-tooltip .tooltip-amount,
 :global(.custom-tooltip .tooltip-amount) { font-size: 9px; }
 }
